@@ -1,5 +1,5 @@
 Flask==3.0.0
-reportlab==4.0.7
+reportlab==4.2.5
 qrcode[pil]==7.4.2
 pillow==10.1.0
 gunicorn==21.2.0
