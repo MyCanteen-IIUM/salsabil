@@ -1,0 +1,37 @@
+/* ============================================
+   CSS MINIMAL pour Menu Mobile RTL
+   ============================================
+   
+   Ce fichier contient UNIQUEMENT les ajustements
+   nécessaires pour que le menu mobile fonctionne
+   correctement avec dir="rtl".
+   
+   Tous les autres styles restent identiques à
+   la version française.
+============================================ */
+
+/* Correction du menu mobile pour RTL */
+@media (max-width: 1200px) {
+    [dir="rtl"] .nav-links {
+        left: auto !important;
+        right: -100% !important;
+        transition: right 0.3s ease !important;
+    }
+
+    [dir="rtl"] .nav-links.active {
+        right: 0 !important;
+        left: auto !important;
+    }
+}
+
+@media (max-width: 768px) {
+    [dir="rtl"] .nav-links {
+        left: auto !important;
+        right: -100% !important;
+    }
+    
+    [dir="rtl"] .nav-links.active {
+        right: 0 !important;
+        left: auto !important;
+    }
+}
