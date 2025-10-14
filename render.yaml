@@ -3,7 +3,7 @@ services:
     name: salsabil-rh
     env: python
     runtime: python-3.9.18
-    buildCommand: pip install -r requirements.txt
+    buildCommand: bash build.sh
     startCommand: gunicorn -c gunicorn_config.py app:app
     envVars:
       - key: SECRET_KEY
@@ -12,4 +12,6 @@ services:
         value: production
       - key: DEBUG
         value: False
+      - key: PYTHON_VERSION
+        value: 3.9.18
     autoDeploy: true
