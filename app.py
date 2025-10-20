@@ -283,8 +283,12 @@ def apply(job_id):
             )
             
             print(f"✅ Candidature créée avec succès! ID: {app_id}")
-            flash(f'Votre candidature pour le poste de {job_title_value} a été envoyée avec succès !', 'success')
-            return redirect(url_for('jobs'))
+            # Rediriger vers la page de confirmation avec les détails
+            return redirect(url_for('confirmation', 
+                                  job_title=job_title_value,
+                                  candidate_name=f"{request.form.get('prenom', '')} {request.form.get('nom', '')}",
+                                  candidate_email=request.form.get('email', ''),
+                                  reference_number=app_id))
             
         except Exception as e:
             print(f"❌ ERREUR lors de la création de la candidature: {str(e)}")
@@ -422,8 +426,12 @@ def apply_ar(job_id):
             app_id = create_application(**application_params)
             
             print(f"✅ تم إنشاء الطلب بنجاح! ID: {app_id}")
-            flash(f'تم إرسال طلبك لوظيفة {job_title_value} بنجاح!', 'success')
-            return redirect(url_for('jobs_ar'))
+            # الانتقال إلى صفحة التأكيد مع التفاصيل
+            return redirect(url_for('confirmation_ar', 
+                                  job_title=job_title_value,
+                                  candidate_name=f"{request.form.get('prenom', '')} {request.form.get('nom', '')}",
+                                  candidate_email=request.form.get('email', ''),
+                                  reference_number=app_id))
             
         except Exception as e:
             print(f"❌ خطأ أثناء إنشاء الطلب: {str(e)}")
@@ -435,6 +443,43 @@ def apply_ar(job_id):
             return render_template('apply_ar.html', job=job)
     
     return render_template('apply_ar.html', job=job)
+
+# Routes de confirmation
+@app.route('/confirmation')
+def confirmation():
+    """Page de confirmation après envoi de candidature (Français)"""
+    from datetime import datetime
+    
+    job_title = request.args.get('job_title', '')
+    candidate_name = request.args.get('candidate_name', '')
+    candidate_email = request.args.get('candidate_email', '')
+    reference_number = request.args.get('reference_number', '')
+    submission_date = datetime.now().strftime('%d/%m/%Y à %H:%M')
+    
+    return render_template('confirmation.html', 
+                         job_title=job_title,
+                         candidate_name=candidate_name,
+                         candidate_email=candidate_email,
+                         reference_number=reference_number,
+                         submission_date=submission_date)
+
+@app.route('/confirmation_ar')
+def confirmation_ar():
+    """Page de confirmation après envoi de candidature (Arabe)"""
+    from datetime import datetime
+    
+    job_title = request.args.get('job_title', '')
+    candidate_name = request.args.get('candidate_name', '')
+    candidate_email = request.args.get('candidate_email', '')
+    reference_number = request.args.get('reference_number', '')
+    submission_date = datetime.now().strftime('%d/%m/%Y - %H:%M')
+    
+    return render_template('confirmation_ar.html', 
+                         job_title=job_title,
+                         candidate_name=candidate_name,
+                         candidate_email=candidate_email,
+                         reference_number=reference_number,
+                         submission_date=submission_date)
 
 # Routes Admin
 @app.route('/admin/login', methods=['GET', 'POST'])
