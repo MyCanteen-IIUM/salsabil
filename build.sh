@@ -2,8 +2,8 @@
 # exit on error
 set -o errexit
 
-# Force Python 3.9
-export PYTHON_VERSION=3.9.18
+# Force Python 3.11 pour compatibilité psycopg2
+export PYTHON_VERSION=3.11.9
 
 # Upgrade pip
 pip install --upgrade pip

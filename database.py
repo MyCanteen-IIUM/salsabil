@@ -352,9 +352,14 @@ def init_db():
     conn.commit()
     
     # Insérer les employés par défaut s'ils n'existent pas
-    cursor.execute('SELECT COUNT(*) FROM employees')
+    cursor.execute('SELECT COUNT(*) as count FROM employees')
     count_result = cursor.fetchone()
-    employee_count = count_result[0] if count_result else 0
+    
+    # Gérer le résultat selon le type (dict pour PostgreSQL, tuple pour SQLite via wrapper)
+    if isinstance(count_result, dict):
+        employee_count = count_result.get('count', 0)
+    else:
+        employee_count = count_result[0] if count_result else 0
     
     if employee_count == 0:
         default_employees = [
