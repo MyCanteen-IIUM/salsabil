@@ -76,7 +76,13 @@ ROLE_PERMISSIONS = {
 
 def is_closing_soon(deadline_str):
     """Vérifie si la date limite est dans moins de 7 jours"""
-    deadline = datetime.strptime(deadline_str, '%Y-%m-%d')
+    # Gérer à la fois les strings (SQLite) et les objets date (PostgreSQL)
+    if isinstance(deadline_str, str):
+        deadline = datetime.strptime(deadline_str, '%Y-%m-%d')
+    else:
+        # C'est déjà un objet date/datetime (PostgreSQL)
+        deadline = datetime.combine(deadline_str, datetime.min.time()) if hasattr(deadline_str, 'year') else deadline_str
+    
     today = datetime.now()
     days_remaining = (deadline - today).days
     return days_remaining <= 7 and days_remaining >= 0
