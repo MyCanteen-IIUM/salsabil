@@ -1,8 +1,19 @@
-from database import get_db_connection
+from database import get_db_connection, is_postgresql
 from datetime import datetime
 import os
 
 # ==================== UTILITY FUNCTIONS ====================
+
+def get_placeholder():
+    """Retourne le placeholder SQL approprié selon la base de données"""
+    return '%s' if is_postgresql() else '?'
+
+def convert_query_placeholders(query, num_params):
+    """Convertit les placeholders ? en %s si nécessaire pour PostgreSQL"""
+    if is_postgresql():
+        # Remplacer tous les ? par %s
+        return query.replace('?', '%s')
+    return query
 
 def delete_file_if_exists(filename):
     """Supprimer un fichier du système de fichiers s'il existe"""
@@ -305,7 +316,9 @@ def create_application(job_id, job_title, prenom, nom, email, telephone, adresse
         
         print("   💾 Exécution de la requête SQL INSERT...")
         
-        cursor.execute('''
+        # Utiliser le placeholder approprié
+        ph = get_placeholder()
+        query = f'''
             INSERT INTO applications 
             (job_id, job_title, prenom, nom, email, telephone, adresse, pays, region,
              sexe, lieu_naissance, date_naissance, nationalite, etat_civil,
@@ -317,8 +330,10 @@ def create_application(job_id, job_title, prenom, nom, email, telephone, adresse
              choix_travail,
              photo, cv, lettre_demande, carte_id, lettre_recommandation, 
              casier_judiciaire, diplome, status, date_soumission)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ''', (job_id, job_title, prenom, nom, email, telephone, adresse, pays, region,
+            VALUES ({ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph})
+        '''
+        
+        cursor.execute(query, (job_id, job_title, prenom, nom, email, telephone, adresse, pays, region,
               sexe, lieu_naissance, date_naissance, nationalite, etat_civil,
               travaille_actuellement, dernier_lieu_travail, raison_depart,
               niveau_instruction, specialisation, specialisation_autre,
