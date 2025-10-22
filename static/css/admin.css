@@ -336,6 +336,11 @@
     color: white;
 }
 
+.stat-icon.purple {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
 .stat-icon.red {
     background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
     color: white;
