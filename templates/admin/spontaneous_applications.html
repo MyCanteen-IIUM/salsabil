@@ -184,8 +184,64 @@
                 </div>
             </div>
 
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon blue">
+                        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="8.5" cy="7" r="4"></circle>
+                            <path d="M15 8h6m-3-3v6"></path>
+                        </svg>
+                    </div>
+                    <div class="stat-info">
+                        <h3>{{ applications|length }}</h3>
+                        <p>{% if lang == 'ar' %}إجمالي الطلبات العفوية{% else %}Total candidatures spontanées{% endif %}</p>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon green">
+                        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                        </svg>
+                    </div>
+                    <div class="stat-info">
+                        <h3>{{ applications|selectattr('status', 'equalto', 'acceptée')|list|length }}</h3>
+                        <p>{% if lang == 'ar' %}مقبول{% else %}Acceptées{% endif %}</p>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon orange">
+                        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="8" x2="12" y2="12"></line>
+                            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                        </svg>
+                    </div>
+                    <div class="stat-info">
+                        <h3>{{ applications|selectattr('status', 'equalto', 'en attente')|list|length }}</h3>
+                        <p>{% if lang == 'ar' %}قيد الانتظار{% else %}En attente{% endif %}</p>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon purple">
+                        <svg width="30" height="30" viewBox="0 0 24 24" fill="#FFD700" stroke="currentColor" stroke-width="2">
+                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                        </svg>
+                    </div>
+                    <div class="stat-info">
+                        <h3>{{ applications|selectattr('is_favorite', 'equalto', 1)|list|length }}</h3>
+                        <p>{% if lang == 'ar' %}المرشحون المفضلون{% else %}Candidats favoris{% endif %}</p>
+                    </div>
+                </div>
+            </div>
+
             <!-- Toggle Favorites Button -->
-            <div style="margin-bottom: 1.5rem;">
+            <div style="margin-bottom: 1.5rem; margin-top: 2rem;">
                 {% if is_favorites_view %}
                 <a href="{{ url_for('admin_spontaneous_applications_ar' if lang == 'ar' else 'admin_spontaneous_applications') }}" class="btn-toggle-favorites">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -254,6 +310,7 @@
                                 <option value="Moroni">Moroni</option>
                                 <option value="Oichili">Oichili</option>
                                 <option value="Dimani">Dimani</option>
+                                <option value="Tsingoni">Mboikou</option>
                                 <option value="Mboudé">Mboudé</option>
                             </optgroup>
                             <optgroup label="Anjouan">
@@ -263,7 +320,7 @@
                                 <option value="Sima">Sima</option>
                                 <option value="Adda-Douéni">Adda-Douéni</option>
                                 <option value="Barakani">Barakani</option>
-                                <option value="Koni-Djodjo">Koni-Djodjo</option>
+                                <option value="Koni-Djodjo">Noumakélé</option>
                                 <option value="Moya">Moya</option>
                                 <option value="Nioumachoua">Nioumachoua (Anjouan)</option>
                                 <option value="Pomoni">Pomoni</option>
