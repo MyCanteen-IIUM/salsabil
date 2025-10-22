@@ -576,7 +576,8 @@ def admin_spontaneous_applications():
                          jobs=get_all_jobs(),
                          current_user=current_user,
                          permissions=permissions,
-                         spontaneous_count=spontaneous_count)
+                         spontaneous_count=spontaneous_count,
+                         lang='fr')
 
 @app.route('/admin/favorite-applications')
 @login_required
@@ -600,7 +601,8 @@ def admin_favorite_applications():
                          current_user=current_user,
                          permissions=permissions,
                          spontaneous_count=spontaneous_count,
-                         is_favorites_view=True)
+                         is_favorites_view=True,
+                         lang='fr')
 
 @app.route('/admin/spontaneous-applications/<int:app_id>')
 @login_required
