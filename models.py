@@ -448,6 +448,58 @@ def update_phase1_status(app_id, decision, interview_date=None, rejection_reason
                 status = 'interview programmé'
             WHERE id = ?
         ''', (decision, current_date, interview_date, app_id))
+        
+        # Générer le PDF de convocation à l'entretien
+        try:
+            import os
+            from pdf_generator import generate_interview_invitation_pdf
+            
+            # Récupérer les données de la candidature
+            application = cursor.execute('SELECT * FROM applications WHERE id = ?', (app_id,)).fetchone()
+            
+            if application:
+                # Créer le dossier convocations s'il n'existe pas
+                convocations_dir = os.path.join('static', 'convocations')
+                os.makedirs(convocations_dir, exist_ok=True)
+                
+                # Nom du fichier PDF
+                pdf_filename = f"convocation_{app_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+                pdf_path = os.path.join(convocations_dir, pdf_filename)
+                
+                # Générer le code de vérification
+                verification_code = f"CONV-{app_id}-{datetime.now().strftime('%Y%m%d')}"
+                
+                # Obtenir l'URL de base (à adapter selon votre déploiement)
+                base_url = os.environ.get('BASE_URL', 'http://localhost:5000')
+                
+                # Convertir application en dictionnaire si nécessaire
+                if hasattr(application, 'keys'):
+                    # C'est déjà un dict-like object (sqlite3.Row)
+                    app_data = {key: application[key] for key in application.keys()}
+                else:
+                    # C'est un tuple, on doit récupérer les colonnes
+                    columns = [description[0] for description in cursor.description]
+                    app_data = dict(zip(columns, application))
+                
+                # Générer le PDF
+                generate_interview_invitation_pdf(
+                    application_data=app_data,
+                    interview_date=interview_date,
+                    output_path=pdf_path,
+                    verification_code=verification_code,
+                    base_url=base_url
+                )
+                
+                # Sauvegarder le nom du fichier dans la base de données
+                cursor.execute('UPDATE applications SET interview_invitation_pdf = ? WHERE id = ?', 
+                             (pdf_filename, app_id))
+                conn.commit()
+                
+        except Exception as e:
+            print(f"⚠️ Erreur lors de la génération du PDF de convocation: {e}")
+            import traceback
+            traceback.print_exc()
+        
     elif decision == 'rejected':
         cursor.execute('''
             UPDATE applications 

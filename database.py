@@ -361,18 +361,18 @@ def init_db():
     else:
         employee_count = count_result[0] if count_result else 0
     
+    # Déterminer le placeholder à utiliser
+    if is_postgresql():
+        placeholder = '%s'
+    else:
+        placeholder = '?'
+    
     if employee_count == 0:
         default_employees = [
             ('admin', 'admin123', 'Super', 'Admin', 'admin@salsabil.com', 'admin', 'actif'),
             ('hr', 'hr123', 'Sarah', 'Martin', 'hr@salsabil.com', 'hr', 'actif'),
             ('recruteur', 'rec123', 'Pierre', 'Dupont', 'recruteur@salsabil.com', 'recruteur', 'actif')
         ]
-        
-        # Utiliser le placeholder approprié selon la base de données
-        if is_postgresql():
-            placeholder = '%s'
-        else:
-            placeholder = '?'
         
         cursor.executemany(f'''
             INSERT INTO employees (username, password, prenom, nom, email, role, status)
@@ -381,6 +381,39 @@ def init_db():
         
         conn.commit()
         print("✅ Employés par défaut créés")
+    
+    # Créer un job fictif avec id=0 pour les candidatures spontanées (nécessaire pour PostgreSQL FK)
+    cursor.execute('SELECT COUNT(*) as count FROM jobs WHERE id = 0')
+    count_result = cursor.fetchone()
+    
+    if isinstance(count_result, dict):
+        job_exists = count_result.get('count', 0) > 0
+    else:
+        job_exists = (count_result[0] if count_result else 0) > 0
+    
+    if not job_exists:
+        # Pour PostgreSQL, nous devons insérer avec id=0 explicitement
+        if is_postgresql():
+            cursor.execute(f'''
+                INSERT INTO jobs (id, titre, type, lieu, description, date_limite, date_publication)
+                VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, CURRENT_TIMESTAMP)
+            ''', (0, 'Candidature Spontanée', 'Spontané', 'Toutes nos agences', 
+                  'Job virtuel pour les candidatures spontanées', '2099-12-31'))
+        else:
+            # Pour SQLite, on ne peut pas forcer l'id=0 avec AUTOINCREMENT
+            # On insère normalement et on met à jour l'id après
+            cursor.execute(f'''
+                INSERT INTO jobs (titre, type, lieu, description, date_limite, date_publication)
+                VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, datetime('now'))
+            ''', ('Candidature Spontanée', 'Spontané', 'Toutes nos agences', 
+                  'Job virtuel pour les candidatures spontanées', '2099-12-31'))
+            
+            # Récupérer l'id inséré et le mettre à 0
+            last_id = cursor.lastrowid
+            cursor.execute(f'UPDATE jobs SET id = 0 WHERE id = {placeholder}', (last_id,))
+        
+        conn.commit()
+        print("✅ Job fictif (id=0) créé pour les candidatures spontanées")
     
     conn.close()
     print("✅ Base de données initialisée avec succès!")
