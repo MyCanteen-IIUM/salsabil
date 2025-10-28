@@ -140,6 +140,22 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+def get_redirect_with_lang(route_name, **kwargs):
+    """Redirige vers une route en préservant la langue"""
+    lang = session.get('lang', 'fr')
+    
+    # Si la route a une version arabe et qu'on est en arabe
+    if lang == 'ar' and not route_name.endswith('_ar'):
+        ar_route = route_name + '_ar'
+        # Vérifier si la route arabe existe
+        try:
+            return redirect(url_for(ar_route, **kwargs))
+        except:
+            # Si pas de version arabe, utiliser la version normale
+            pass
+    
+    return redirect(url_for(route_name, **kwargs))
+
 @app.route('/')
 def home():
     """Route pour la page d'accueil - affiche directement les postes disponibles"""
@@ -783,6 +799,9 @@ def admin_update_status(app_id):
 def admin_delete_application(app_id):
     """Route pour supprimer une candidature"""
     
+    # Sauvegarder la langue actuelle
+    lang = session.get('lang', 'fr')
+    
     try:
         # Récupérer l'info de la candidature AVANT suppression pour savoir où rediriger
         all_applications = get_all_applications()
@@ -791,7 +810,11 @@ def admin_delete_application(app_id):
         
         # Supprimer la candidature de la base de données (fichiers inclus)
         delete_application(app_id)
-        flash('Candidature supprimée avec succès', 'success')
+        
+        if lang == 'ar':
+            flash('تم حذف الطلب بنجاح', 'success')
+        else:
+            flash('Candidature supprimée avec succès', 'success')
         
         # Rediriger vers la bonne page selon le type
         if is_spontaneous:
@@ -813,19 +836,31 @@ def admin_toggle_favorite(app_id):
     """Route pour marquer/démarquer une candidature spontanée comme favorite"""
     from models import toggle_favorite
     
+    # Sauvegarder la langue actuelle
+    lang = session.get('lang', 'fr')
+    
     try:
         new_status = toggle_favorite(app_id)
         if new_status is not None:
             if new_status == 1:
-                flash('✨ Candidature ajoutée aux favoris', 'success')
+                if lang == 'ar':
+                    flash('✨ تمت إضافة الطلب إلى المفضلة', 'success')
+                else:
+                    flash('✨ Candidature ajoutée aux favoris', 'success')
             else:
-                flash('Candidature retirée des favoris', 'info')
+                if lang == 'ar':
+                    flash('تمت إزالة الطلب من المفضلة', 'info')
+                else:
+                    flash('Candidature retirée des favoris', 'info')
         else:
-            flash('Seules les candidatures spontanées peuvent être marquées comme favorites', 'error')
+            if lang == 'ar':
+                flash('فقط الطلبات العفوية يمكن إضافتها إلى المفضلة', 'error')
+            else:
+                flash('Seules les candidatures spontanées peuvent être marquées comme favorites', 'error')
     except Exception as e:
         flash(f'Erreur: {str(e)}', 'error')
     
-    # Retour à la page précédente
+    # Retour à la page précédente en préservant la langue
     referrer = request.referrer
     if referrer and 'spontaneous-applications' in referrer:
         # Si on vient de la liste spontanée OU de la page détails spontanée

@@ -633,8 +633,8 @@ def toggle_favorite(app_id):
         current_status = result['is_favorite']
         job_id = result['job_id']
         
-        # Vérifier que c'est une candidature spontanée (job_id = 0)
-        if job_id == 0:
+        # Vérifier que c'est une candidature spontanée (job_id = NULL ou 0)
+        if job_id is None or job_id == 0:
             new_status = 0 if current_status == 1 else 1
             conn.execute('UPDATE applications SET is_favorite = ? WHERE id = ?', (new_status, app_id))
             conn.commit()
