@@ -192,9 +192,53 @@ def apply(job_id):
             return redirect(url_for('jobs'))
     
     if request.method == 'POST':
+        # 🔍 DEBUG CRITIQUE: Logs IMMEDIATS
+        print("\n" + "="*80)
+        print("🚨 POST REQUEST RECEIVED - DEBUT DU TRAITEMENT")
+        print("="*80)
+        print(f"📍 URL: {request.url}")
+        print(f"📍 Path: {request.path}")
+        print(f"📍 Method: {request.method}")
+        print(f"📍 Content-Type: {request.content_type}")
+        print(f"📍 Content-Length: {request.content_length}")
+        print(f"📍 Form keys: {list(request.form.keys())[:20]}")  # Premier 20 clés
+        print(f"📍 Files keys: {list(request.files.keys())}")
+        print(f"📍 Headers: {dict(request.headers)}")
+        print("="*80 + "\n")
+        
         print("📝 Réception d'une candidature...")
         print(f"   Job ID: {job_id}")
         print(f"   Job titre: {job.get('titre', 'N/A')}")
+        
+        # 🔍 DEBUG: Afficher toutes les données du formulaire
+        print("\n🔍 DEBUG - Données du formulaire reçues:")
+        print(f"   Content-Type: {request.content_type}")
+        print(f"   Nombre de champs form: {len(request.form)}")
+        print(f"   Nombre de fichiers: {len(request.files)}")
+        
+        if len(request.form) > 0:
+            print("   📋 Champs du formulaire:")
+            for key in list(request.form.keys())[:10]:  # Afficher les 10 premiers
+                value = request.form.get(key)
+                print(f"      - {key}: {value[:50] if value and len(value) > 50 else value}")
+        else:
+            print("   ⚠️  ATTENTION: request.form est VIDE!")
+            print(f"   📊 Tentative de récupération alternative...")
+            print(f"      - request.data: {request.data[:200] if request.data else 'Vide'}")
+            print(f"      - request.get_json(): {request.get_json(silent=True)}")
+            
+            # Si request.form est vide, on ne peut pas continuer
+            if len(request.form) == 0 and len(request.files) == 0:
+                print("   ❌ ERREUR CRITIQUE: Aucune donnée reçue du formulaire!")
+                flash('Erreur: Les données du formulaire n\'ont pas été reçues. Veuillez réessayer.', 'error')
+                return render_template('apply.html', job=job)
+            
+        if len(request.files) > 0:
+            print("   📎 Fichiers uploadés:")
+            for key in request.files.keys():
+                file = request.files[key]
+                print(f"      - {key}: {file.filename if file.filename else 'Aucun fichier'}")
+        print()
         
         try:
             # Traiter les fichiers uploadés
