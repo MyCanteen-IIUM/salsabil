@@ -14,7 +14,7 @@ from database import init_db
 load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = os.environ.get('SECRET_KEY', 'votre_cle_secrete_ici')  # Utilisez une vraie clé en production
+app.secret_key = os.environ.get('SECRET_KEY', '50413bec4583c16ffdc1e34242029112')  # Utilisez une vraie clé en production
 
 # Initialiser la base de données au démarrage
 init_db()
@@ -377,12 +377,54 @@ def apply_ar(job_id):
             return redirect(url_for('jobs_ar'))
     
     if request.method == 'POST':
-        # Utiliser la même logique que apply()
+        # 🔍 DEBUG CRITIQUE: Logs IMMEDIATS (VERSION ARABE)
+        print("\n" + "="*80)
+        print("🚨 POST REQUEST RECEIVED (ARABIC) - بداية المعالجة")
+        print("="*80)
+        print(f"📍 URL: {request.url}")
+        print(f"📍 Path: {request.path}")
+        print(f"📍 Method: {request.method}")
+        print(f"📍 Content-Type: {request.content_type}")
+        print(f"📍 Content-Length: {request.content_length}")
+        print(f"📍 Form keys: {list(request.form.keys())[:20]}")  # Premier 20 clés
+        print(f"📍 Files keys: {list(request.files.keys())}")
+        print(f"📍 Headers: {dict(request.headers)}")
+        print("="*80 + "\n")
+        
         print("📝 استقبال طلب توظيف...")
         print(f"   Job ID: {job_id}")
-        print(f"   Job: {job}")  # Afficher tout le job pour debug
         print(f"   Job titre: {job.get('titre', 'N/A')}")
         print(f"   Job title: {job.get('title', 'N/A')}")
+        
+        # 🔍 DEBUG: Afficher toutes les données du formulaire
+        print("\n🔍 DEBUG - بيانات النموذج المستلمة:")
+        print(f"   Content-Type: {request.content_type}")
+        print(f"   Nombre de champs form: {len(request.form)}")
+        print(f"   Nombre de fichiers: {len(request.files)}")
+        
+        if len(request.form) > 0:
+            print("   📋 حقول النموذج:")
+            for key in list(request.form.keys())[:10]:  # Afficher les 10 premiers
+                value = request.form.get(key)
+                print(f"      - {key}: {value[:50] if value and len(value) > 50 else value}")
+        else:
+            print("   ⚠️  تحذير: request.form فارغ!")
+            print(f"   📊 محاولة استرداد بديلة...")
+            print(f"      - request.data: {request.data[:200] if request.data else 'فارغ'}")
+            print(f"      - request.get_json(): {request.get_json(silent=True)}")
+            
+            # Si request.form est vide, on ne peut pas continuer
+            if len(request.form) == 0 and len(request.files) == 0:
+                print("   ❌ خطأ حرج: لم يتم استلام أي بيانات من النموذج!")
+                flash('خطأ: لم يتم استلام بيانات النموذج. الرجاء المحاولة مرة أخرى.', 'error')
+                return render_template('apply_ar.html', job=job)
+        
+        if len(request.files) > 0:
+            print("   📎 الملفات المرفوعة:")
+            for key in request.files.keys():
+                file = request.files[key]
+                print(f"      - {key}: {file.filename if file.filename else 'لا يوجد ملف'}")
+        print()
         
         try:
             # Même traitement que apply()
