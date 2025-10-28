@@ -20,25 +20,47 @@ import hashlib
 import secrets
 
 # Enregistrer les polices Unicode qui supportent l'arabe
+FONT_NAME = 'Helvetica'
+FONT_NAME_BOLD = 'Helvetica-Bold'
+
 try:
-    # Essayer d'utiliser Arial Unicode (disponible sur macOS)
-    pdfmetrics.registerFont(TTFont('ArialUnicode', '/Library/Fonts/Arial Unicode.ttf'))
-    FONT_NAME = 'ArialUnicode'
-    FONT_NAME_BOLD = 'ArialUnicode'
-    print("✅ Police Unicode chargée: Arial Unicode (support complet de l'arabe)")
-except:
+    # Essayer d'utiliser Amiri (police dédiée à l'arabe) dans le dossier local
+    amiri_path = os.path.join(os.path.dirname(__file__), 'fonts', 'Amiri-Regular.ttf')
+    amiri_bold_path = os.path.join(os.path.dirname(__file__), 'fonts', 'Amiri-Bold.ttf')
+    
+    if os.path.exists(amiri_path):
+        pdfmetrics.registerFont(TTFont('Amiri', amiri_path))
+        if os.path.exists(amiri_bold_path):
+            pdfmetrics.registerFont(TTFont('Amiri-Bold', amiri_bold_path))
+            FONT_NAME_BOLD = 'Amiri-Bold'
+        else:
+            FONT_NAME_BOLD = 'Amiri'
+        FONT_NAME = 'Amiri'
+        print("✅ Police Amiri chargée (excellent support de l'arabe)")
+    else:
+        raise FileNotFoundError("Amiri non trouvée localement")
+except Exception as e:
     try:
-        # Fallback: DejaVu
-        pdfmetrics.registerFont(TTFont('DejaVu', '/System/Library/Fonts/Supplemental/DejaVuSans.ttf'))
-        pdfmetrics.registerFont(TTFont('DejaVu-Bold', '/System/Library/Fonts/Supplemental/DejaVuSans-Bold.ttf'))
-        FONT_NAME = 'DejaVu'
-        FONT_NAME_BOLD = 'DejaVu-Bold'
-        print("✅ Police Unicode chargée: DejaVu (support complet de l'arabe)")
-    except:
-        # Dernier recours: Helvetica (pas d'arabe mais au moins ça marche)
-        FONT_NAME = 'Helvetica'
-        FONT_NAME_BOLD = 'Helvetica-Bold'
-        print("⚠️ Attention: Police Unicode non trouvée. Les caractères arabes pourraient ne pas s'afficher correctement.")
+        # Fallback 1: Arial Unicode (macOS)
+        pdfmetrics.registerFont(TTFont('ArialUnicode', '/Library/Fonts/Arial Unicode.ttf'))
+        FONT_NAME = 'ArialUnicode'
+        FONT_NAME_BOLD = 'ArialUnicode'
+        print("✅ Police Arial Unicode chargée (support de l'arabe)")
+    except Exception as e2:
+        try:
+            # Fallback 2: DejaVu Sans (macOS)
+            pdfmetrics.registerFont(TTFont('DejaVu', '/System/Library/Fonts/Supplemental/DejaVuSans.ttf'))
+            pdfmetrics.registerFont(TTFont('DejaVu-Bold', '/System/Library/Fonts/Supplemental/DejaVuSans-Bold.ttf'))
+            FONT_NAME = 'DejaVu'
+            FONT_NAME_BOLD = 'DejaVu-Bold'
+            print("✅ Police DejaVu chargée (support de l'arabe)")
+        except Exception as e3:
+            # Dernier recours: Helvetica (pas d'arabe)
+            FONT_NAME = 'Helvetica'
+            FONT_NAME_BOLD = 'Helvetica-Bold'
+            print("⚠️ ATTENTION: Aucune police Unicode trouvée!")
+            print("   Les caractères arabes s'afficheront comme des carrés ■")
+            print(f"   Erreurs: Amiri={e}, Arial={e2}, DejaVu={e3}")
 
 
 # ============================================================================

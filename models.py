@@ -498,6 +498,23 @@ def update_phase1_status(app_id, decision, interview_date=None, rejection_reason
                 # Sauvegarder le nom du fichier dans la base de données
                 cursor.execute('UPDATE applications SET interview_invitation_pdf = ? WHERE id = ?', 
                              (pdf_filename, app_id))
+                
+                # ✅ ENREGISTRER LE CODE DE VÉRIFICATION DANS LA TABLE
+                cursor.execute('''
+                    INSERT INTO document_verifications 
+                    (verification_code, application_id, document_type, candidate_name, job_title, issue_date, pdf_path, status)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                ''', (
+                    verification_code,
+                    app_id,
+                    'convocation',
+                    f"{app_data['prenom']} {app_data['nom']}",
+                    app_data.get('selected_job_title') or app_data['job_title'],
+                    datetime.now().strftime('%d/%m/%Y'),
+                    pdf_path,
+                    'valide'
+                ))
+                
                 conn.commit()
                 
         except Exception as e:
