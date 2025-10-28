@@ -975,12 +975,16 @@ def admin_phase2_decision(app_id):
             # URL de base pour le QR code
             base_url = request.url_root.rstrip('/')
             
+            # Détecter la langue actuelle
+            lang = session.get('lang', 'fr')
+            
             # Générer le PDF avec QR code
             generate_acceptance_letter_pdf(
                 application, 
                 pdf_path,
                 verification_code=verification_code,
-                base_url=base_url
+                base_url=base_url,
+                lang=lang
             )
             
             # Sauvegarder le chemin dans la base de données
@@ -1089,13 +1093,17 @@ def admin_generate_interview_invitation(app_id):
         # URL de base pour le QR code
         base_url = request.url_root.rstrip('/')
         
+        # Détecter la langue actuelle
+        lang = session.get('lang', 'fr')
+        
         # Générer le PDF avec QR code
         generate_interview_invitation_pdf(
             application_data=application,
             interview_date=application['interview_date'],
             output_path=pdf_path,
             verification_code=verification_code,
-            base_url=base_url
+            base_url=base_url,
+            lang=lang
         )
         
         # Sauvegarder le chemin dans la base de données

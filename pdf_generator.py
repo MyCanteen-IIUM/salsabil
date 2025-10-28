@@ -9,6 +9,8 @@ from reportlab.lib.units import cm
 from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY, TA_RIGHT
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image, KeepTogether
 from reportlab.lib import colors
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
 from datetime import datetime
 import os
 import qrcode
@@ -16,6 +18,149 @@ from io import BytesIO
 import hashlib
 import hashlib
 import secrets
+
+# Enregistrer les polices Unicode qui supportent l'arabe
+try:
+    # Essayer d'utiliser Arial Unicode (disponible sur macOS)
+    pdfmetrics.registerFont(TTFont('ArialUnicode', '/Library/Fonts/Arial Unicode.ttf'))
+    FONT_NAME = 'ArialUnicode'
+    FONT_NAME_BOLD = 'ArialUnicode'
+    print("✅ Police Unicode chargée: Arial Unicode (support complet de l'arabe)")
+except:
+    try:
+        # Fallback: DejaVu
+        pdfmetrics.registerFont(TTFont('DejaVu', '/System/Library/Fonts/Supplemental/DejaVuSans.ttf'))
+        pdfmetrics.registerFont(TTFont('DejaVu-Bold', '/System/Library/Fonts/Supplemental/DejaVuSans-Bold.ttf'))
+        FONT_NAME = 'DejaVu'
+        FONT_NAME_BOLD = 'DejaVu-Bold'
+        print("✅ Police Unicode chargée: DejaVu (support complet de l'arabe)")
+    except:
+        # Dernier recours: Helvetica (pas d'arabe mais au moins ça marche)
+        FONT_NAME = 'Helvetica'
+        FONT_NAME_BOLD = 'Helvetica-Bold'
+        print("⚠️ Attention: Police Unicode non trouvée. Les caractères arabes pourraient ne pas s'afficher correctement.")
+
+
+# ============================================================================
+# DICTIONNAIRES DE TRADUCTION POUR LES PDF
+# ============================================================================
+
+INVITATION_TEXTS = {
+    'fr': {
+        'issued': 'Émis le',
+        'title': 'CONVOCATION À UN ENTRETIEN',
+        'company_name': 'SALSABIL',
+        'company_subtitle': 'Entreprise de Recrutement',
+        'attention': 'À l\'attention de :',
+        'greeting': 'Madame, Monsieur',
+        'intro_1': 'Suite à votre candidature pour le poste de',
+        'intro_2': 'nous avons le plaisir de vous informer que votre profil a retenu notre attention.',
+        'convocation': 'Nous souhaitons vous rencontrer afin d\'échanger sur votre parcours, vos compétences et vos motivations.',
+        'please_present': 'Nous vous prions de bien vouloir vous présenter à notre siège aux date et heure suivantes :',
+        'interview_info': 'Informations de l\'entretien',
+        'date': 'Date',
+        'time': 'Heure',
+        'address': 'Adresse',
+        'position': 'Poste',
+        'contact': 'Contact',
+        'instructions': 'Veuillez vous présenter muni(e) de cette convocation et d\'une pièce d\'identité.',
+        'closing': 'Nous comptons sur votre présence et restons à votre disposition pour toute information complémentaire.',
+        'signature': 'Cordialement,',
+        'hr_team': 'L\'équipe Ressources Humaines',
+        'verification_title': 'Vérification du document',
+        'verification_text': 'Ce document est authentique. Scannez le QR code pour vérifier en ligne.',
+        'verification_code': 'Code de vérification'
+    },
+    'ar': {
+        'issued': 'صدر في',
+        'title': 'دعوة لإجراء مقابلة',
+        'company_name': 'السلسبيل',
+        'company_subtitle': 'شركة التوظيف',
+        'attention': 'إلى عناية:',
+        'greeting': 'السيدة، السيد',
+        'intro_1': 'بعد تقديمكم لطلب التوظيف لمنصب',
+        'intro_2': 'يسعدنا أن نعلمكم بأن ملفكم الشخصي قد نال اهتمامنا.',
+        'convocation': 'نود أن نلتقي بكم لمناقشة مسيرتكم المهنية ومهاراتكم ودوافعكم.',
+        'please_present': 'يرجى التفضل بالحضور إلى مقرنا في التاريخ والوقت التاليين:',
+        'interview_info': 'معلومات المقابلة',
+        'date': 'التاريخ',
+        'time': 'الوقت',
+        'address': 'العنوان',
+        'position': 'المنصب',
+        'contact': 'الاتصال',
+        'instructions': 'يرجى الحضور مع هذه الدعوة وبطاقة الهوية.',
+        'closing': 'نتطلع إلى حضوركم ونبقى تحت تصرفكم لأي معلومات إضافية.',
+        'signature': 'مع خالص التحيات،',
+        'hr_team': 'فريق الموارد البشرية',
+        'verification_title': 'التحقق من الوثيقة',
+        'verification_text': 'هذه الوثيقة أصلية. امسح رمز الاستجابة السريعة للتحقق عبر الإنترنت.',
+        'verification_code': 'رمز التحقق'
+    }
+}
+
+ACCEPTANCE_TEXTS = {
+    'fr': {
+        'issued': 'Émis le',
+        'title': 'LETTRE D\'ACCEPTATION',
+        'company_name': 'SALSABIL',
+        'company_subtitle': 'Entreprise de Recrutement',
+        'attention': 'À l\'attention de :',
+        'congratulations': 'Félicitations !',
+        'greeting': 'Madame, Monsieur',
+        'acceptance_msg_1': 'Nous avons le grand plaisir de vous informer que votre candidature pour le poste de',
+        'acceptance_msg_2': 'a été retenue.',
+        'integration': 'Nous vous souhaitons la bienvenue au sein de notre équipe et sommes impatients de collaborer avec vous.',
+        'contract_details': 'Détails du contrat',
+        'position': 'Poste',
+        'start_date': 'Date de début',
+        'contract_type': 'Type de contrat',
+        'salary': 'Salaire',
+        'next_steps': 'Prochaines étapes',
+        'documents': 'Veuillez nous fournir les documents suivants avant votre prise de poste :',
+        'id_copy': 'Copie de pièce d\'identité',
+        'cv': 'CV actualisé',
+        'diploma_copies': 'Copies des diplômes',
+        'photos': 'Photos d\'identité',
+        'medical_cert': 'Certificat médical',
+        'closing': 'Nous sommes convaincus que votre intégration sera une réussite et nous réjouissons de vous compter parmi nous.',
+        'signature': 'Cordialement,',
+        'hr_team': 'L\'équipe Ressources Humaines',
+        'verification_title': 'Vérification du document',
+        'verification_text': 'Ce document est authentique. Scannez le QR code pour vérifier en ligne.',
+        'verification_code': 'Code de vérification'
+    },
+    'ar': {
+        'issued': 'صدر في',
+        'title': 'خطاب القبول',
+        'company_name': 'السلسبيل',
+        'company_subtitle': 'شركة التوظيف',
+        'attention': 'إلى عناية:',
+        'congratulations': 'تهانينا!',
+        'greeting': 'السيدة، السيد',
+        'acceptance_msg_1': 'يسعدنا أن نعلمكم بأنه تم قبول طلبكم لمنصب',
+        'acceptance_msg_2': 'مع تهانينا الحارة.',
+        'integration': 'نرحب بكم في فريقنا ونتطلع إلى التعاون معكم.',
+        'contract_details': 'تفاصيل العقد',
+        'position': 'المنصب',
+        'start_date': 'تاريخ البداية',
+        'contract_type': 'نوع العقد',
+        'salary': 'الراتب',
+        'next_steps': 'الخطوات القادمة',
+        'documents': 'يرجى تزويدنا بالوثائق التالية قبل تاريخ البداية:',
+        'id_copy': 'نسخة من بطاقة الهوية',
+        'cv': 'السيرة الذاتية محدثة',
+        'diploma_copies': 'نسخ من الشهادات',
+        'photos': 'صور شخصية',
+        'medical_cert': 'شهادة طبية',
+        'closing': 'نحن واثقون من أن انضمامكم سيكون ناجحاً ونتطلع إلى العمل معكم.',
+        'signature': 'مع خالص التحيات،',
+        'hr_team': 'فريق الموارد البشرية',
+        'verification_title': 'التحقق من الوثيقة',
+        'verification_text': 'هذه الوثيقة أصلية. امسح رمز الاستجابة السريعة للتحقق عبر الإنترنت.',
+        'verification_code': 'رمز التحقق'
+    }
+}
+
 
 def generate_verification_code(application_id, document_type):
     """
@@ -70,18 +215,24 @@ def create_qr_code(verification_url):
     return img_buffer
 
 
-def generate_interview_invitation_pdf(application_data, interview_date, output_path, verification_code=None, base_url="http://localhost:5000"):
+def generate_interview_invitation_pdf(application_data, interview_date, output_path, verification_code=None, base_url="http://localhost:5000", lang='fr'):
     """
-    Générer un PDF de convocation à l'entretien
+    Générer un PDF de convocation à l'entretien (français ou arabe)
     
     Args:
         application_data: Dictionnaire contenant les infos du candidat
         interview_date: Date et heure de l'entretien (format: "2025-10-15 14:00")
         output_path: Chemin où sauvegarder le PDF
+        verification_code: Code de vérification du document
+        base_url: URL de base pour le QR code
+        lang: Langue du document ('fr' ou 'ar')
     
     Returns:
         str: Chemin du fichier PDF généré
     """
+    
+    # Récupérer les traductions
+    t = INVITATION_TEXTS.get(lang, INVITATION_TEXTS['fr'])
     
     # Créer le document PDF
     doc = SimpleDocTemplate(
@@ -107,7 +258,7 @@ def generate_interview_invitation_pdf(application_data, interview_date, output_p
         textColor=colors.HexColor('#2c3e50'),
         spaceAfter=8,
         alignment=TA_CENTER,
-        fontName='Helvetica-Bold'
+        fontName=FONT_NAME_BOLD
     )
     
     # Style pour le sous-titre
@@ -118,7 +269,7 @@ def generate_interview_invitation_pdf(application_data, interview_date, output_p
         textColor=colors.HexColor('#3498db'),
         spaceAfter=8,
         alignment=TA_CENTER,
-        fontName='Helvetica-Bold'
+        fontName=FONT_NAME_BOLD
     )
     
     # Style pour le corps
@@ -129,7 +280,7 @@ def generate_interview_invitation_pdf(application_data, interview_date, output_p
         textColor=colors.HexColor('#2c3e50'),
         spaceAfter=6,
         alignment=TA_JUSTIFY,
-        fontName='Helvetica',
+        fontName=FONT_NAME,
         leading=12
     )
     
@@ -140,7 +291,7 @@ def generate_interview_invitation_pdf(application_data, interview_date, output_p
         fontSize=10,
         textColor=colors.HexColor('#2c3e50'),
         spaceAfter=6,
-        fontName='Helvetica-Bold'
+        fontName=FONT_NAME_BOLD
     )
     
     # Style pour la date en haut à droite
@@ -150,7 +301,7 @@ def generate_interview_invitation_pdf(application_data, interview_date, output_p
         fontSize=10,
         textColor=colors.HexColor('#7f8c8d'),
         alignment=TA_RIGHT,
-        fontName='Helvetica'
+        fontName=FONT_NAME
     )
     
     # ========================================================================
@@ -159,7 +310,7 @@ def generate_interview_invitation_pdf(application_data, interview_date, output_p
     
     # Date d'émission
     emission_date = datetime.now().strftime('%d/%m/%Y')
-    elements.append(Paragraph(f"Émis le {emission_date}", date_style))
+    elements.append(Paragraph(f"{t['issued']} {emission_date}", date_style))
     elements.append(Spacer(1, 0.5*cm))
     
     # Logo de l'entreprise
@@ -173,20 +324,20 @@ def generate_interview_invitation_pdf(application_data, interview_date, output_p
         except Exception as e:
             print(f"Erreur lors du chargement du logo: {e}")
             # Fallback au texte si le logo ne peut pas être chargé
-            elements.append(Paragraph("SALSABIL", title_style))
-            elements.append(Paragraph("Entreprise de Recrutement", subtitle_style))
+            elements.append(Paragraph(t['company_name'], title_style))
+            elements.append(Paragraph(t['company_subtitle'], subtitle_style))
             elements.append(Spacer(1, 0.3*cm))
     else:
         # Si le logo n'existe pas, utiliser le texte
-        elements.append(Paragraph("SALSABIL", title_style))
-        elements.append(Paragraph("Entreprise de Recrutement", subtitle_style))
+        elements.append(Paragraph(t['company_name'], title_style))
+        elements.append(Paragraph(t['company_subtitle'], subtitle_style))
         elements.append(Spacer(1, 0.3*cm))
     
     # ========================================================================
     # Titre du document
     # ========================================================================
     
-    title = Paragraph("CONVOCATION À UN ENTRETIEN", title_style)
+    title = Paragraph(t['title'], title_style)
     elements.append(title)
     elements.append(Spacer(1, 0.3*cm))
     
@@ -195,7 +346,7 @@ def generate_interview_invitation_pdf(application_data, interview_date, output_p
     # ========================================================================
     
     recipient = f"""
-    <b>À l'attention de :</b><br/>
+    <b>{t['attention']}</b><br/>
     <b>{application_data['prenom']} {application_data['nom']}</b><br/>
     {application_data['email']}<br/>
     {application_data['telephone']}<br/>
@@ -209,7 +360,7 @@ def generate_interview_invitation_pdf(application_data, interview_date, output_p
     # ========================================================================
     
     # Salutation
-    salutation = f"Madame, Monsieur {application_data['nom']},"
+    salutation = f"{t['greeting']} {application_data['nom']},"
     elements.append(Paragraph(salutation, body_style))
     elements.append(Spacer(1, 0.2*cm))
     
@@ -218,17 +369,15 @@ def generate_interview_invitation_pdf(application_data, interview_date, output_p
     job_title_display = application_data.get('selected_job_title') or application_data['job_title']
     
     intro = f"""
-    Suite à votre candidature pour le poste de <b>{job_title_display}</b>, 
-    nous avons le plaisir de vous informer que votre profil a retenu notre attention.
+    {t['intro_1']} <b>{job_title_display}</b>, 
+    {t['intro_2']}
     """
     elements.append(Paragraph(intro, body_style))
     elements.append(Spacer(1, 0.2*cm))
     
     # Convocation
-    convocation = """
-    Nous souhaitons vous rencontrer afin d'échanger sur votre parcours, vos compétences 
-    et vos motivations. Nous vous prions de bien vouloir vous présenter à notre siège 
-    aux date et heure suivantes :
+    convocation = f"""
+    {t['convocation']} {t['please_present']}
     """
     elements.append(Paragraph(convocation, body_style))
     elements.append(Spacer(1, 0.2*cm))
@@ -266,10 +415,10 @@ def generate_interview_invitation_pdf(application_data, interview_date, output_p
     
     # Créer un tableau pour les informations
     interview_info = [
-        ['📅 Date', formatted_day],
-        ['🕐 Heure', formatted_time],
-        ['📍 Lieu', 'Siège de SALSABIL'],
-        ['💼 Poste', job_title_display],
+        [f'📅 {t["date"]}', formatted_day],
+        [f'🕐 {t["time"]}', formatted_time],
+        [f'📍 {t["address"]}', 'Siège de SALSABIL' if lang == 'fr' else 'مقر السلسبيل'],
+        [f'💼 {t["position"]}', job_title_display],
     ]
     
     interview_table = Table(interview_info, colWidths=[5*cm, 10*cm])
@@ -292,18 +441,23 @@ def generate_interview_invitation_pdf(application_data, interview_date, output_p
     # Instructions importantes
     # ========================================================================
     
-    important_title = Paragraph("<b>⚠️ IMPORTANT :</b>", info_style)
+    important_title = Paragraph(f"<b>⚠️ {t['instructions']}</b>", info_style)
     elements.append(important_title)
-    elements.append(Spacer(1, 0.1*cm))
+    elements.append(Spacer(1, 0.3*cm))
     
-    instructions = """
-    • <b>Merci de vous présenter 10 minutes avant l'heure prévue.</b><br/>
-    • <b>Ce document est obligatoire pour accéder à nos locaux.</b> 
-      Veuillez le présenter à l'accueil.<br/>
-    • Veuillez vous munir d'une <b>pièce d'identité en cours de validité</b>.<br/>
-    • En cas d'empêchement, merci de nous prévenir <b>au moins 24 heures à l'avance</b>.
+    # ========================================================================
+    # Conclusion et signature
+    # ========================================================================
+    
+    closing = Paragraph(t['closing'], body_style)
+    elements.append(closing)
+    elements.append(Spacer(1, 0.3*cm))
+    
+    signature = f"""
+    {t['signature']}<br/>
+    <b>{t['hr_team']}</b>
     """
-    elements.append(Paragraph(instructions, body_style))
+    elements.append(Paragraph(signature, body_style))
     elements.append(Spacer(1, 0.3*cm))
     
     # ========================================================================
@@ -321,9 +475,9 @@ def generate_interview_invitation_pdf(application_data, interview_date, output_p
             canvas.drawImage(qr_img, x=1.2*cm, y=A4[1]-4*cm, width=3*cm, height=3*cm, mask='auto')
             canvas.restoreState()
             # Texte code en bas centré
-            code_text = f"Code de vérification : {verification_code}"
+            code_text = f"{t['verification_code']} : {verification_code}"
             canvas.saveState()
-            canvas.setFont("Helvetica-Bold", 12)
+            canvas.setFont(FONT_NAME_BOLD, 12)
             canvas.setFillColor(colors.HexColor('#2c3e50'))
             canvas.drawCentredString(A4[0]/2, 1.7*cm, code_text)
             canvas.restoreState()
@@ -341,7 +495,7 @@ def generate_interview_invitation_pdf(application_data, interview_date, output_p
         fontSize=8,
         textColor=colors.HexColor('#95a5a6'),
         alignment=TA_CENTER,
-        fontName='Helvetica'
+        fontName=FONT_NAME
     )
     elements.append(Spacer(1, 0.3*cm))
     elements.append(Paragraph(reference, footer_style))
@@ -376,19 +530,23 @@ def generate_interview_invitation_filename(candidate_name, application_id):
     return f"Convocation_Entretien_{clean_name}_{application_id}_{timestamp}.pdf"
 
 
-def generate_acceptance_letter_pdf(application_data, output_path, verification_code=None, base_url="http://localhost:5000"):
+def generate_acceptance_letter_pdf(application_data, output_path, verification_code=None, base_url="http://localhost:5000", lang='fr'):
     """
-    Générer un PDF de lettre d'acceptation finale après interview
+    Générer un PDF de lettre d'acceptation finale après interview (français ou arabe)
     
     Args:
         application_data: Dictionnaire contenant les infos du candidat
         output_path: Chemin où sauvegarder le PDF
         verification_code: Code de vérification unique (optionnel)
         base_url: URL de base pour le QR code
+        lang: Langue du document ('fr' ou 'ar')
     
     Returns:
         str: Chemin du fichier PDF généré
     """
+    
+    # Récupérer les traductions
+    t = ACCEPTANCE_TEXTS.get(lang, ACCEPTANCE_TEXTS['fr'])
     
     # Créer le document PDF
     doc = SimpleDocTemplate(
@@ -425,10 +583,10 @@ def generate_acceptance_letter_pdf(application_data, output_path, verification_c
         textColor=colors.HexColor('#2ecc71'),
         spaceAfter=12,
         alignment=TA_CENTER,
-        fontName='Helvetica-Bold'
+        fontName=FONT_NAME_BOLD
     )
     
-    title = "🎉 LETTRE D'ACCEPTATION 🎉"
+    title = f"🎉 {t['title']} 🎉"
     elements.append(Paragraph(title, title_style))
     elements.append(Spacer(1, 0.3*cm))
     
@@ -439,9 +597,10 @@ def generate_acceptance_letter_pdf(application_data, output_path, verification_c
         fontSize=12,
         textColor=colors.HexColor('#27ae60'),
         alignment=TA_CENTER,
-        fontName='Helvetica-Bold'
+        fontName=FONT_NAME_BOLD
     )
-    elements.append(Paragraph("Bienvenue dans l'équipe SALSABIL !", subtitle_style))
+    welcome_text = "Bienvenue dans l'équipe SALSABIL !" if lang == 'fr' else "مرحباً بكم في فريق السلسبيل!"
+    elements.append(Paragraph(welcome_text, subtitle_style))
     elements.append(Spacer(1, 1*cm))
     
     # ========================================================================
@@ -457,7 +616,7 @@ def generate_acceptance_letter_pdf(application_data, output_path, verification_c
     )
     
     current_date = datetime.now().strftime('%d/%m/%Y')
-    date_text = f"Djibouti, le {current_date}"
+    date_text = f"Djibouti, {t['issued']} {current_date}" if lang == 'fr' else f"جيبوتي، {t['issued']} {current_date}"
     elements.append(Paragraph(date_text, date_style))
     elements.append(Spacer(1, 1*cm))
     
@@ -470,11 +629,11 @@ def generate_acceptance_letter_pdf(application_data, output_path, verification_c
         parent=styles['Normal'],
         fontSize=11,
         textColor=colors.HexColor('#2c3e50'),
-        fontName='Helvetica-Bold'
+        fontName=FONT_NAME_BOLD
     )
     
     recipient = f"""
-    <b>À l'attention de :</b><br/>
+    <b>{t['attention']}</b><br/>
     {application_data.get('prenom', '')} {application_data.get('nom', '')}<br/>
     {application_data.get('adresse', 'Djibouti')}<br/>
     Email : {application_data.get('email', '')}<br/>
@@ -494,7 +653,7 @@ def generate_acceptance_letter_pdf(application_data, output_path, verification_c
         textColor=colors.HexColor('#2c3e50'),
         alignment=TA_JUSTIFY,
         leading=16,
-        fontName='Helvetica'
+        fontName=FONT_NAME
     )
     
     # Objet
@@ -503,51 +662,42 @@ def generate_acceptance_letter_pdf(application_data, output_path, verification_c
         parent=styles['Normal'],
         fontSize=11,
         textColor=colors.HexColor('#2c3e50'),
-        fontName='Helvetica-Bold',
+        fontName=FONT_NAME_BOLD,
         alignment=TA_CENTER
     )
     
     job_title = application_data.get('job_title', 'le poste proposé')
     
-    elements.append(Paragraph(f"<b>Objet : Acceptation de votre candidature - {job_title}</b>", object_style))
+    object_text = f"Acceptation de votre candidature - {job_title}" if lang == 'fr' else f"قبول طلبكم - {job_title}"
+    elements.append(Paragraph(f"<b>{object_text}</b>", object_style))
     elements.append(Spacer(1, 0.8*cm))
     
     # Salutation
-    salutation = f"Madame, Monsieur {application_data.get('nom', '')},"
+    salutation = f"{t['greeting']} {application_data.get('nom', '')},"
     elements.append(Paragraph(salutation, body_style))
     elements.append(Spacer(1, 0.5*cm))
     
     # Paragraphe 1 : Félicitations
     para1 = f"""
-    C'est avec un immense plaisir que nous vous informons que votre candidature pour le poste de 
-    <b>{job_title}</b> au sein de SALSABIL a été <b style="color: #27ae60;">retenue</b>.
+    {t['acceptance_msg_1']} <b>{job_title}</b> {t['acceptance_msg_2']}
     """
     elements.append(Paragraph(para1, body_style))
     elements.append(Spacer(1, 0.5*cm))
     
-    # Paragraphe 2 : Qualités
-    para2 = """
-    Après avoir examiné attentivement votre dossier et suite à l'entretien que vous avez passé, 
-    nous avons été convaincus par vos compétences, votre motivation et votre professionnalisme. 
-    Vous avez démontré toutes les qualités requises pour réussir dans ce poste.
-    """
+    # Paragraphe 2 : Integration
+    para2 = t['integration']
     elements.append(Paragraph(para2, body_style))
     elements.append(Spacer(1, 0.5*cm))
     
-    # Paragraphe 3 : Prochaines étapes
-    para3 = """
-    Nous vous invitons à prendre contact avec notre service des ressources humaines dans les 
-    <b>7 jours ouvrables</b> suivant la réception de cette lettre afin de finaliser les 
-    formalités administratives et convenir de votre date de prise de fonction.
-    """
-    elements.append(Paragraph(para3, body_style))
-    elements.append(Spacer(1, 0.5*cm))
-    
     # Encadré avec informations de contact
+    contact_label_phone = '📞 Téléphone' if lang == 'fr' else '📞 الهاتف'
+    contact_label_email = '📧 Email' if lang == 'fr' else '📧 البريد الإلكتروني'
+    contact_label_address = '📍 Adresse' if lang == 'fr' else '📍 العنوان'
+    
     contact_data = [
-        ['📞 Téléphone', '+253 XXX XXX XXX'],
-        ['📧 Email', 'rh@salsabil.dj'],
-        ['📍 Adresse', 'SALSABIL, Djibouti']
+        [contact_label_phone, '+253 XXX XXX XXX'],
+        [contact_label_email, 'rh@salsabil.dj'],
+        [contact_label_address, 'SALSABIL, Djibouti']
     ]
     
     contact_table = Table(contact_data, colWidths=[5*cm, 10*cm])
@@ -555,8 +705,8 @@ def generate_acceptance_letter_pdf(application_data, output_path, verification_c
         ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#ecf0f1')),
         ('TEXTCOLOR', (0, 0), (-1, -1), colors.HexColor('#2c3e50')),
         ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-        ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
-        ('FONTNAME', (1, 0), (1, -1), 'Helvetica'),
+        ('FONTNAME', (0, 0), (0, -1), FONT_NAME_BOLD),
+        ('FONTNAME', (1, 0), (1, -1), FONT_NAME),
         ('FONTSIZE', (0, 0), (-1, -1), 10),
         ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#bdc3c7')),
         ('LEFTPADDING', (0, 0), (-1, -1), 10),
@@ -570,37 +720,14 @@ def generate_acceptance_letter_pdf(application_data, output_path, verification_c
     elements.append(Spacer(1, 0.8*cm))
     
     # Paragraphe 4 : Félicitations finales
-    para4 = """
-    Nous sommes ravis de vous accueillir au sein de notre équipe et nous sommes convaincus que 
-    votre arrivée contribuera grandement au développement et au succès de SALSABIL.
-    """
+    para4 = t['closing']
     elements.append(Paragraph(para4, body_style))
     elements.append(Spacer(1, 0.5*cm))
     
     # Clôture
-    closing = """
-    Dans l'attente de vous rencontrer très prochainement, nous vous prions d'agréer, 
-    Madame, Monsieur, l'expression de nos salutations distinguées.
-    """
-    elements.append(Paragraph(closing, body_style))
+    closing_text = f"{t['signature']}<br/><b>{t['hr_team']}</b>"
+    elements.append(Paragraph(closing_text, body_style))
     elements.append(Spacer(1, 1*cm))
-    
-    # Signature
-    signature_style = ParagraphStyle(
-        'Signature',
-        parent=styles['Normal'],
-        fontSize=11,
-        textColor=colors.HexColor('#2c3e50'),
-        fontName='Helvetica-Bold',
-        alignment=TA_RIGHT
-    )
-    
-    signature = """
-    <b>Le Directeur des Ressources Humaines</b><br/>
-    <b>SALSABIL</b>
-    """
-    elements.append(Paragraph(signature, signature_style))
-    elements.append(Spacer(1, 0.5*cm))
     
     # ========================================================================
     # QR Code en haut à gauche et texte code en bas de page
@@ -635,7 +762,7 @@ def generate_acceptance_letter_pdf(application_data, output_path, verification_c
         fontSize=8,
         textColor=colors.HexColor('#95a5a6'),
         alignment=TA_CENTER,
-        fontName='Helvetica'
+        fontName=FONT_NAME
     )
     
     elements.append(Spacer(1, 0.5*cm))
