@@ -179,6 +179,41 @@ html, body {
         word-wrap: break-word !important;
     }
     
+    /* Checkbox group (conditions d'acceptation) */
+    .checkbox-group {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: flex-start !important;
+        gap: 0.75rem !important;
+        padding: 1rem !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        background-color: #f8f9fa !important;
+        border-radius: 8px !important;
+        border: 2px solid #e0e0e0 !important;
+    }
+    
+    .checkbox-group input[type="checkbox"] {
+        flex-shrink: 0 !important;
+        margin-top: 0.2rem !important;
+        width: 24px !important;
+        height: 24px !important;
+        min-width: 24px !important;
+        min-height: 24px !important;
+    }
+    
+    .checkbox-group label {
+        flex: 1 !important;
+        font-size: 0.9rem !important;
+        line-height: 1.5 !important;
+        word-wrap: break-word !important;
+        word-break: break-word !important;
+        overflow-wrap: break-word !important;
+        margin: 0 !important;
+        cursor: pointer !important;
+    }
+    
     /* Department selection (Section 5) */
     .departments-grid {
         grid-template-columns: 1fr !important;
@@ -323,6 +358,23 @@ html, body {
     
     .job-checkbox label {
         font-size: 0.85rem !important;
+    }
+    
+    /* Checkbox group pour petit mobile */
+    .checkbox-group {
+        padding: 0.85rem !important;
+    }
+    
+    .checkbox-group label {
+        font-size: 0.85rem !important;
+        line-height: 1.4 !important;
+    }
+    
+    .checkbox-group input[type="checkbox"] {
+        width: 22px !important;
+        height: 22px !important;
+        min-width: 22px !important;
+        min-height: 22px !important;
     }
     
     .form-navigation {
