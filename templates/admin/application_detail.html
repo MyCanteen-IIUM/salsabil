@@ -1028,21 +1028,15 @@
                                     {% else %}
                                         <p class="notification-status pending">{% if lang == 'ar' %}⏳ إشعار في الانتظار{% else %}⏳ Notification en attente{% endif %}</p>
                                         
-                                        <!-- Alerte PDF si disponible -->
+                                        <!-- Lien PDF discret si disponible -->
                                         {% if session.pending_notifications and session.pending_notifications.pdf_path %}
-                                        <div class="pdf-attachment-alert">
-                                            <div class="alert-icon">📎</div>
-                                            <div class="alert-content">
-                                                <strong>⚠️ PIÈCE JOINTE OBLIGATOIRE</strong>
-                                                <p>Joindre le PDF de convocation à l'email :</p>
-                                                <a href="{{ url_for('admin_download_interview_invitation', app_id=application.id) }}" 
-                                                   class="btn-download-pdf" target="_blank">
-                                                    📥 Télécharger {{ session.pending_notifications.pdf_filename }}
-                                                </a>
-                                                <p class="pdf-note">
-                                                    ℹ️ Le candidat doit présenter ce document à l'accueil pour accéder aux locaux.
-                                                </p>
-                                            </div>
+                                        <div style="margin: 10px 0;">
+                                            <a href="{{ url_for('admin_download_interview_invitation', app_id=application.id) }}" 
+                                               class="btn-download-pdf" 
+                                               target="_blank"
+                                               style="font-size: 13px; padding: 6px 12px; display: inline-block;">
+                                                📥 {{ session.pending_notifications.pdf_filename }}
+                                            </a>
                                         </div>
                                         {% endif %}
                                         
