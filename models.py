@@ -457,7 +457,7 @@ def update_phase1_status(app_id, decision, interview_date=None, rejection_reason
         # Générer le PDF de convocation à l'entretien
         try:
             import os
-            from pdf_generator import generate_interview_invitation_pdf
+            from pdf_generator import generate_interview_invitation_pdf, generate_verification_code
             
             # Récupérer les données de la candidature
             application = cursor.execute('SELECT * FROM applications WHERE id = ?', (app_id,)).fetchone()
@@ -471,8 +471,8 @@ def update_phase1_status(app_id, decision, interview_date=None, rejection_reason
                 pdf_filename = f"convocation_{app_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
                 pdf_path = os.path.join(convocations_dir, pdf_filename)
                 
-                # Générer le code de vérification
-                verification_code = f"CONV-{app_id}-{datetime.now().strftime('%Y%m%d')}"
+                # Générer le code de vérification sécurisé (16 caractères hexadécimaux)
+                verification_code = generate_verification_code(app_id, 'convocation')
                 
                 # Obtenir l'URL de base (à adapter selon votre déploiement)
                 base_url = os.environ.get('BASE_URL', 'http://localhost:5000')
