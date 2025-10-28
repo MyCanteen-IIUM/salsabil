@@ -1308,11 +1308,11 @@
             const image = document.getElementById('previewImage');
             const title = document.getElementById('previewTitle');
             
-            title.textContent = 'Aperçu: ' + fileName;
+            title.textContent = '{% if lang == "ar" %}معاينة{% else %}Aperçu{% endif %}: ' + fileName;
             
-            // Détermine si c'est une image ou un document
-            const fileExtension = fileName.split('.').pop().toLowerCase();
-            const imageExtensions = ['jpg', 'jpeg', 'png', 'gif'];
+            // Extraire l'extension depuis l'URL du fichier au lieu du nom affiché
+            const fileExtension = fileUrl.split('.').pop().toLowerCase().split('?')[0];
+            const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'];
             
             if (imageExtensions.includes(fileExtension)) {
                 // Afficher l'image
