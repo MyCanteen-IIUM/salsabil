@@ -659,7 +659,7 @@ def get_favorite_applications():
     conn = get_db_connection()
     applications = conn.execute('''
         SELECT * FROM applications 
-        WHERE job_id = 0 AND is_favorite = 1 
+        WHERE (job_id IS NULL OR job_id = 0) AND is_favorite = 1 
         ORDER BY date_soumission DESC
     ''').fetchall()
     conn.close()
