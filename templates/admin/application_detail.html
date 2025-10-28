@@ -457,7 +457,7 @@
                                     <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
                                 </svg>
                                 <div>
-                                    <label>Niveau d'instruction</label>
+                                    <label>{% if lang == 'ar' %}المستوى التعليمي{% else %}Niveau d'instruction{% endif %}</label>
                                     <p>{{ application.niveau_instruction }}</p>
                                 </div>
                             </div>
@@ -470,7 +470,7 @@
                                     <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
                                 </svg>
                                 <div>
-                                    <label>Spécialisation</label>
+                                    <label>{% if lang == 'ar' %}التخصص{% else %}Spécialisation{% endif %}</label>
                                     <p>{{ application.specialisation }}</p>
                                 </div>
                             </div>
@@ -484,7 +484,7 @@
                                     <line x1="12" y1="8" x2="12.01" y2="8"></line>
                                 </svg>
                                 <div>
-                                    <label>Autre spécialisation</label>
+                                    <label>{% if lang == 'ar' %}تخصص آخر{% else %}Autre spécialisation{% endif %}</label>
                                     <p>{{ application.specialisation_autre }}</p>
                                 </div>
                             </div>
@@ -497,7 +497,7 @@
                                     <path d="M2 12h20"></path>
                                 </svg>
                                 <div>
-                                    <label>Langue arabe</label>
+                                    <label>{% if lang == 'ar' %}اللغة العربية{% else %}Langue arabe{% endif %}</label>
                                     <p>{{ application.langue_arabe }}</p>
                                 </div>
                             </div>
@@ -510,7 +510,7 @@
                                     <path d="M2 12h20"></path>
                                 </svg>
                                 <div>
-                                    <label>Langue anglaise</label>
+                                    <label>{% if lang == 'ar' %}اللغة الإنجليزية{% else %}Langue anglaise{% endif %}</label>
                                     <p>{{ application.langue_anglaise }}</p>
                                 </div>
                             </div>
@@ -523,7 +523,7 @@
                                     <path d="M2 12h20"></path>
                                 </svg>
                                 <div>
-                                    <label>Langue française</label>
+                                    <label>{% if lang == 'ar' %}اللغة الفرنسية{% else %}Langue française{% endif %}</label>
                                     <p>{{ application.langue_francaise }}</p>
                                 </div>
                             </div>
@@ -559,7 +559,7 @@
                                     <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
                                 </svg>
                                 <div>
-                                    <label>Problèmes de santé</label>
+                                    <label>{% if lang == 'ar' %}مشاكل صحية{% else %}Problèmes de santé{% endif %}</label>
                                     <p>{{ application.problemes_sante }}</p>
                                 </div>
                             </div>
@@ -572,7 +572,7 @@
                                     <line x1="12" y1="8" x2="12.01" y2="8"></line>
                                 </svg>
                                 <div>
-                                    <label>Nature de la maladie</label>
+                                    <label>{% if lang == 'ar' %}طبيعة المرض{% else %}Nature de la maladie{% endif %}</label>
                                     <p>{{ application.nature_maladie }}</p>
                                 </div>
                             </div>
@@ -596,7 +596,7 @@
                                     <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
                                 </svg>
                                 <div>
-                                    <label>Domaines d'intérêt</label>
+                                    <label>{% if lang == 'ar' %}مجالات الاهتمام{% else %}Domaines d'intérêt{% endif %}</label>
                                     <p style="color: #667eea; font-weight: 600;">{{ application.choix_travail }}</p>
                                 </div>
                             </div>
@@ -912,49 +912,49 @@
                                                     <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
                                                     <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
                                                 </svg>
-                                                Sélectionner le poste pour l'entretien *
+                                                {% if lang == 'ar' %}اختيار المنصب للمقابلة *{% else %}Sélectionner le poste pour l'entretien *{% endif %}
                                             </label>
                                             <small style="color: #666; margin-bottom: 0.5rem; display: block;">
-                                                Choisissez parmi les domaines d'intérêt du candidat : <strong>{{ application.choix_travail }}</strong>
+                                                {% if lang == 'ar' %}اختر من بين مجالات اهتمام المرشح:{% else %}Choisissez parmi les domaines d'intérêt du candidat :{% endif %} <strong>{{ application.choix_travail }}</strong>
                                             </small>
                                             <select name="selected_job_title" id="selectedJobTitle" required style="font-size: 1rem; padding: 0.8rem;">
-                                                <option value="">-- Choisir le poste pour l'entretien --</option>
+                                                <option value="">{% if lang == 'ar' %}-- اختر المنصب للمقابلة --{% else %}-- Choisir le poste pour l'entretien --{% endif %}</option>
                                                 {% set job_choices = application.choix_travail.split(', ') %}
                                                 {% for choice in job_choices %}
                                                 <option value="{{ choice }}">{{ choice }}</option>
                                                 {% endfor %}
                                             </select>
                                             <small style="color: #3498db; margin-top: 0.5rem; display: block;">
-                                                💡 Ce poste sera mentionné dans la convocation officielle
+                                                {% if lang == 'ar' %}💡 سيتم ذكر هذا المنصب في الدعوة الرسمية{% else %}💡 Ce poste sera mentionné dans la convocation officielle{% endif %}
                                             </small>
                                         </div>
                                         {% endif %}
                                         
                                         <div class="form-group">
-                                            <label>Décision :</label>
+                                            <label>{% if lang == 'ar' %}القرار:{% else %}Décision :{% endif %}</label>
                                             <select name="decision" id="phase1Decision" required onchange="togglePhase1Fields()">
-                                                <option value="">-- Sélectionner --</option>
-                                                <option value="selected_for_interview">✅ Retenu pour interview</option>
-                                                <option value="rejected">❌ Rejeté</option>
+                                                <option value="">{% if lang == 'ar' %}-- اختر --{% else %}-- Sélectionner --{% endif %}</option>
+                                                <option value="selected_for_interview">{% if lang == 'ar' %}✅ محتفظ به للمقابلة{% else %}✅ Retenu pour interview{% endif %}</option>
+                                                <option value="rejected">{% if lang == 'ar' %}❌ مرفوض{% else %}❌ Rejeté{% endif %}</option>
                                             </select>
                                         </div>
                                         
                                         <div id="interviewDateField" class="form-group" style="display: none;">
-                                            <label>Date de l'entretien :</label>
+                                            <label>{% if lang == 'ar' %}تاريخ المقابلة:{% else %}Date de l'entretien :{% endif %}</label>
                                             <input type="datetime-local" name="interview_date" class="form-input">
-                                            <small>Le candidat recevra un email et un message WhatsApp avec cette date.</small>
+                                            <small>{% if lang == 'ar' %}سيتلقى المرشح بريدًا إلكترونيًا ورسالة واتساب مع هذا التاريخ.{% else %}Le candidat recevra un email et un message WhatsApp avec cette date.{% endif %}</small>
                                         </div>
                                         
                                         <div id="rejectionReasonField" class="form-group" style="display: none;">
-                                            <label>Raison du rejet (optionnel) :</label>
-                                            <textarea name="rejection_reason" rows="3" class="form-input" placeholder="Ex: Profil ne correspondant pas aux exigences du poste..."></textarea>
+                                            <label>{% if lang == 'ar' %}سبب الرفض (اختياري):{% else %}Raison du rejet (optionnel) :{% endif %}</label>
+                                            <textarea name="rejection_reason" rows="3" class="form-input" placeholder="{% if lang == 'ar' %}مثال: الملف الشخصي لا يتوافق مع متطلبات المنصب...{% else %}Ex: Profil ne correspondant pas aux exigences du poste...{% endif %}"></textarea>
                                         </div>
                                         
                                         <button type="submit" class="btn-workflow">
                                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                                 <polyline points="20 6 9 17 4 12"></polyline>
                                             </svg>
-                                            Valider la décision
+                                            {% if lang == 'ar' %}تأكيد القرار{% else %}Valider la décision{% endif %}
                                         </button>
                                     </form>
                                 </div>
@@ -963,9 +963,9 @@
                                 <!-- Candidat sélectionné pour interview -->
                                 <div class="phase-content completed">
                                     <div class="decision-badge decision-selected">
-                                        ✅ Candidat retenu pour interview
+                                        {% if lang == 'ar' %}✅ المرشح محتفظ به للمقابلة{% else %}✅ Candidat retenu pour interview{% endif %}
                                     </div>
-                                    <p><strong>Date de l'entretien :</strong> {{ application.interview_date or 'Non spécifiée' }}</p>
+                                    <p><strong>{% if lang == 'ar' %}تاريخ المقابلة:{% else %}Date de l'entretien :{% endif %}</strong> {{ application.interview_date or ('غير محدد' if lang == 'ar' else 'Non spécifiée') }}</p>
                                     <p><strong>{% if lang == 'ar' %}تاريخ القرار:{% else %}Décision prise le :{% endif %}</strong> {{ application.phase1_date }}</p>
                                     
                                     <!-- Section Convocation PDF -->
@@ -1116,34 +1116,34 @@
                                 <!-- Formulaire de décision Phase 2 -->
                                 <div class="phase-content active">
                                     <p class="phase-description">
-                                        L'entretien a eu lieu. Prenez maintenant votre décision finale.
+                                        {% if lang == 'ar' %}تمت المقابلة. اتخذ الآن قرارك النهائي.{% else %}L'entretien a eu lieu. Prenez maintenant votre décision finale.{% endif %}
                                     </p>
                                     
                                     <form method="POST" action="{{ url_for('admin_phase2_decision', app_id=application.id) }}" class="workflow-form">
                                         <div class="form-group">
-                                            <label>Notes d'entretien (optionnel) :</label>
-                                            <textarea name="interview_notes" rows="4" class="form-input" placeholder="Vos observations pendant l'entretien...">{{ application.interview_notes or '' }}</textarea>
+                                            <label>{% if lang == 'ar' %}ملاحظات المقابلة (اختياري):{% else %}Notes d'entretien (optionnel) :{% endif %}</label>
+                                            <textarea name="interview_notes" rows="4" class="form-input" placeholder="{% if lang == 'ar' %}ملاحظاتك أثناء المقابلة...{% else %}Vos observations pendant l'entretien...{% endif %}">{{ application.interview_notes or '' }}</textarea>
                                         </div>
                                         
                                         <div class="form-group">
-                                            <label>Décision finale :</label>
+                                            <label>{% if lang == 'ar' %}القرار النهائي:{% else %}Décision finale :{% endif %}</label>
                                             <select name="decision" id="phase2Decision" required onchange="togglePhase2Fields()">
-                                                <option value="">-- Sélectionner --</option>
-                                                <option value="accepted">✅ Accepté (devient membre)</option>
-                                                <option value="rejected">❌ Rejeté</option>
+                                                <option value="">{% if lang == 'ar' %}-- اختر --{% else %}-- Sélectionner --{% endif %}</option>
+                                                <option value="accepted">{% if lang == 'ar' %}✅ مقبول (يصبح عضواً){% else %}✅ Accepté (devient membre){% endif %}</option>
+                                                <option value="rejected">{% if lang == 'ar' %}❌ مرفوض{% else %}❌ Rejeté{% endif %}</option>
                                             </select>
                                         </div>
                                         
                                         <div id="phase2RejectionReasonField" class="form-group" style="display: none;">
-                                            <label>Raison du rejet (optionnel) :</label>
-                                            <textarea name="rejection_reason" rows="3" class="form-input" placeholder="Ex: Compétences techniques insuffisantes..."></textarea>
+                                            <label>{% if lang == 'ar' %}سبب الرفض (اختياري):{% else %}Raison du rejet (optionnel) :{% endif %}</label>
+                                            <textarea name="rejection_reason" rows="3" class="form-input" placeholder="{% if lang == 'ar' %}مثال: مهارات تقنية غير كافية...{% else %}Ex: Compétences techniques insuffisantes...{% endif %}"></textarea>
                                         </div>
                                         
                                         <button type="submit" class="btn-workflow">
                                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                                 <polyline points="20 6 9 17 4 12"></polyline>
                                             </svg>
-                                            Valider la décision finale
+                                            {% if lang == 'ar' %}تأكيد القرار النهائي{% else %}Valider la décision finale{% endif %}
                                         </button>
                                     </form>
                                 </div>
@@ -1152,7 +1152,7 @@
                 <!-- Candidat accepté -->
                 <div class="phase-content completed">
                     <div class="decision-badge decision-accepted">
-                        🎉 Candidat accepté - Nouveau membre !
+                        {% if lang == 'ar' %}🎉 المرشح مقبول - عضو جديد!{% else %}🎉 Candidat accepté - Nouveau membre !{% endif %}
                     </div>
                     <p><strong>{% if lang == 'ar' %}تاريخ القرار:{% else %}Décision prise le :{% endif %}</strong> {{ application.phase2_date }}</p>
                     
@@ -1174,12 +1174,12 @@
                     {% endif %}
                     
                     {% if application.interview_notes %}
-                        <p><strong>Notes d'entretien :</strong></p>
+                        <p><strong>{% if lang == 'ar' %}ملاحظات المقابلة:{% else %}Notes d'entretien :{% endif %}</strong></p>
                         <div class="interview-notes">{{ application.interview_notes }}</div>
                     {% endif %}                                    {% if application.phase2_notification_sent %}
-                                        <p class="notification-status sent">✉️ Notification envoyée</p>
+                                        <p class="notification-status sent">{% if lang == 'ar' %}✉️ تم إرسال الإشعار{% else %}✉️ Notification envoyée{% endif %}</p>
                                     {% else %}
-                                        <p class="notification-status pending">⏳ Notification en attente</p>
+                                        <p class="notification-status pending">{% if lang == 'ar' %}⏳ إشعار في الانتظار{% else %}⏳ Notification en attente{% endif %}</p>
                                         <div class="notification-buttons">
                                             {% if session.pending_notifications and session.pending_notifications.app_id == application.id and session.pending_notifications.phase == 2 %}
                                                 <a href="{{ session.pending_notifications.email_link }}" class="btn-notify btn-email" onclick="markNotificationSent({{ application.id }}, 2)">
@@ -1204,21 +1204,21 @@
                                 <!-- Candidat rejeté en Phase 2 -->
                                 <div class="phase-content completed">
                                     <div class="decision-badge decision-rejected">
-                                        ❌ Candidat rejeté après interview
+                                        {% if lang == 'ar' %}❌ المرشح مرفوض بعد المقابلة{% else %}❌ Candidat rejeté après interview{% endif %}
                                     </div>
                                     <p><strong>{% if lang == 'ar' %}تاريخ القرار:{% else %}Décision prise le :{% endif %}</strong> {{ application.phase2_date }}</p>
                                     {% if application.rejection_reason %}
-                                        <p><strong>Raison :</strong> {{ application.rejection_reason }}</p>
+                                        <p><strong>{% if lang == 'ar' %}السبب:{% else %}Raison :{% endif %}</strong> {{ application.rejection_reason }}</p>
                                     {% endif %}
                                     {% if application.interview_notes %}
-                                        <p><strong>Notes d'entretien :</strong></p>
+                                        <p><strong>{% if lang == 'ar' %}ملاحظات المقابلة:{% else %}Notes d'entretien :{% endif %}</strong></p>
                                         <div class="interview-notes">{{ application.interview_notes }}</div>
                                     {% endif %}
                                     
                                     {% if application.phase2_notification_sent %}
-                                        <p class="notification-status sent">✉️ Notification envoyée</p>
+                                        <p class="notification-status sent">{% if lang == 'ar' %}✉️ تم إرسال الإشعار{% else %}✉️ Notification envoyée{% endif %}</p>
                                     {% else %}
-                                        <p class="notification-status pending">⏳ Notification en attente</p>
+                                        <p class="notification-status pending">{% if lang == 'ar' %}⏳ إشعار في الانتظار{% else %}⏳ Notification en attente{% endif %}</p>
                                         <div class="notification-buttons">
                                             {% if session.pending_notifications and session.pending_notifications.app_id == application.id and session.pending_notifications.phase == 2 %}
                                                 <a href="{{ session.pending_notifications.email_link }}" class="btn-notify btn-email" onclick="markNotificationSent({{ application.id }}, 2)">
@@ -1243,7 +1243,7 @@
                                 <!-- Phase 2 désactivée -->
                                 <div class="phase-content disabled">
                                     <p class="phase-disabled-message">
-                                        🔒 Cette phase sera accessible une fois que le candidat aura été retenu pour l'interview (Phase 1).
+                                        {% if lang == 'ar' %}🔒 ستكون هذه المرحلة متاحة بمجرد اختيار المرشح للمقابلة (المرحلة 1).{% else %}🔒 Cette phase sera accessible une fois que le candidat aura été retenu pour l'interview (Phase 1).{% endif %}
                                     </p>
                                 </div>
                             {% endif %}
@@ -1253,30 +1253,30 @@
                         
                         <!-- Actions rapides -->
                         <div class="quick-actions">
-                            <h4>Actions Rapides</h4>
+                            <h4>{% if lang == 'ar' %}إجراءات سريعة{% else %}Actions Rapides{% endif %}</h4>
                             <div class="action-buttons-grid">
                                 <a href="mailto:{{ application.email }}" class="btn-quick-action">
                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
                                         <polyline points="22,6 12,13 2,6"></polyline>
                                     </svg>
-                                    Email personnel
+                                    {% if lang == 'ar' %}البريد الإلكتروني الشخصي{% else %}Email personnel{% endif %}
                                 </a>
 
                                 <a href="https://wa.me/{{ application.telephone.replace(' ', '').replace('-', '').replace('(', '').replace(')', '') }}?text=Bonjour%20{{ application.prenom }}%20{{ application.nom }},%20" target="_blank" class="btn-quick-action">
                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
                                     </svg>
-                                    WhatsApp personnel
+                                    {% if lang == 'ar' %}واتساب شخصي{% else %}WhatsApp personnel{% endif %}
                                 </a>
                                 
-                                <form method="POST" action="{{ url_for('admin_delete_application', app_id=application.id) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette candidature ?');" style="display: inline;">
+                                <form method="POST" action="{{ url_for('admin_delete_application', app_id=application.id) }}" onsubmit="return confirm(&quot;{% if lang == 'ar' %}هل أنت متأكد من رغبتك في حذف هذا الطلب؟{% else %}Êtes-vous sûr de vouloir supprimer cette candidature ?{% endif %}&quot;);" style="display: inline;">
                                     <button type="submit" class="btn-quick-action btn-danger">
                                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                             <polyline points="3 6 5 6 21 6"></polyline>
                                             <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
                                         </svg>
-                                        Supprimer
+                                        {% if lang == 'ar' %}حذف{% else %}Supprimer{% endif %}
                                     </button>
                                 </form>
                             </div>
