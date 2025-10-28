@@ -310,6 +310,11 @@ def create_application(job_id, job_title, prenom, nom, email, telephone, adresse
                       casier_judiciaire, diplome):
     """Créer une nouvelle candidature"""
     try:
+        # Convertir job_id=0 en None pour les candidatures spontanées
+        if job_id == 0:
+            job_id = None
+            print("   🔄 Candidature spontanée détectée: job_id converti en NULL")
+        
         conn = get_db_connection()
         cursor = conn.cursor()
         date_soumission = datetime.now().strftime('%Y-%m-%d')

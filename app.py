@@ -251,7 +251,7 @@ def apply(job_id):
             
             # Créer la candidature dans la base de données
             app_id = create_application(
-                job_id=job_id,
+                job_id=None if job_id == 0 else job_id,  # NULL pour candidatures spontanées
                 job_title=job_title_value,
                 prenom=request.form.get('prenom'),
                 nom=request.form.get('nom'),
@@ -387,7 +387,7 @@ def apply_ar(job_id):
             
             # Préparer les paramètres pour debug
             application_params = {
-                'job_id': job_id,
+                'job_id': None if job_id == 0 else job_id,  # NULL pour candidatures spontanées
                 'job_title': job_title_value,
                 'prenom': request.form.get('prenom'),
                 'nom': request.form.get('nom'),
@@ -535,8 +535,8 @@ def admin_dashboard():
     all_applications = get_all_applications()
     
     # Filtrer pour exclure les candidatures spontanées (job_id = 0)
-    regular_applications = [app for app in all_applications if app.get('job_id') != 0]
-    spontaneous_count = len([app for app in all_applications if app.get('job_id') == 0])
+    regular_applications = [app for app in all_applications if app.get('job_id') is not None]
+    spontaneous_count = len([app for app in all_applications if app.get('job_id') is None])
     
     return render_template('admin/dashboard.html', 
                          applications=regular_applications,
@@ -553,8 +553,8 @@ def admin_applications():
     all_applications = get_all_applications()
     
     # Filtrer pour exclure les candidatures spontanées (job_id = 0)
-    regular_applications = [app for app in all_applications if app.get('job_id') != 0]
-    spontaneous_count = len([app for app in all_applications if app.get('job_id') == 0])
+    regular_applications = [app for app in all_applications if app.get('job_id') is not None]
+    spontaneous_count = len([app for app in all_applications if app.get('job_id') is None])
     
     current_user = get_current_user()
     permissions = has_permission(None)  # Get all permissions
@@ -572,7 +572,7 @@ def admin_spontaneous_applications():
     """Route pour voir uniquement les candidatures spontanées"""
     all_applications = get_all_applications()
     # Filtrer uniquement les candidatures spontanées (job_id = 0)
-    spontaneous_apps = [app for app in all_applications if app.get('job_id') == 0]
+    spontaneous_apps = [app for app in all_applications if app.get('job_id') is None]
     spontaneous_count = len(spontaneous_apps)
     
     current_user = get_current_user()
@@ -596,7 +596,7 @@ def admin_favorite_applications():
     favorite_apps = get_favorite_applications()
     
     all_applications = get_all_applications()
-    spontaneous_count = len([app for app in all_applications if app.get('job_id') == 0])
+    spontaneous_count = len([app for app in all_applications if app.get('job_id') is None])
     
     current_user = get_current_user()
     permissions = has_permission(None)
@@ -623,13 +623,13 @@ def admin_spontaneous_application_detail(app_id):
         return redirect(url_for('admin_spontaneous_applications'))
     
     # Vérifier que c'est bien une candidature spontanée
-    if application.get('job_id') != 0:
+    if application.get('job_id') is not None:
         flash('Cette candidature n\'est pas une candidature spontanée', 'error')
         return redirect(url_for('admin_applications'))
     
     # Filtrer pour exclure les candidatures spontanées (job_id = 0) pour le badge
-    regular_applications = [app for app in all_applications if app.get('job_id') != 0]
-    spontaneous_count = len([app for app in all_applications if app.get('job_id') == 0])
+    regular_applications = [app for app in all_applications if app.get('job_id') is not None]
+    spontaneous_count = len([app for app in all_applications if app.get('job_id') is None])
     
     current_user = get_current_user()
     permissions = has_permission(None)
@@ -659,8 +659,8 @@ def admin_application_detail(app_id):
         return redirect(url_for('admin_applications'))
     
     # Filtrer pour exclure les candidatures spontanées (job_id = 0) pour le badge
-    regular_applications = [app for app in all_applications if app.get('job_id') != 0]
-    spontaneous_count = len([app for app in all_applications if app.get('job_id') == 0])
+    regular_applications = [app for app in all_applications if app.get('job_id') is not None]
+    spontaneous_count = len([app for app in all_applications if app.get('job_id') is None])
     
     current_user = get_current_user()
     permissions = has_permission(None)  # Get all permissions
@@ -701,7 +701,7 @@ def admin_delete_application(app_id):
         # Récupérer l'info de la candidature AVANT suppression pour savoir où rediriger
         all_applications = get_all_applications()
         application = next((app for app in all_applications if app['id'] == app_id), None)
-        is_spontaneous = application and application.get('job_id') == 0
+        is_spontaneous = application and application.get('job_id') is None
         
         # Supprimer la candidature de la base de données (fichiers inclus)
         delete_application(app_id)
@@ -868,7 +868,7 @@ def admin_phase1_decision(app_id):
             return redirect(url_for('admin_applications'))
         
         # Si candidature spontanée et poste sélectionné, le sauvegarder
-        if application['job_id'] == 0 and selected_job_title:
+        if application['job_id'] is None and selected_job_title:
             conn = get_db_connection()
             conn.execute('UPDATE applications SET selected_job_title = ? WHERE id = ?', 
                         (selected_job_title, app_id))
@@ -1174,8 +1174,8 @@ def admin_jobs():
     all_applications = get_all_applications()
     
     # Filtrer pour exclure les candidatures spontanées (job_id = 0)
-    regular_applications = [app for app in all_applications if app.get('job_id') != 0]
-    spontaneous_count = len([app for app in all_applications if app.get('job_id') == 0])
+    regular_applications = [app for app in all_applications if app.get('job_id') is not None]
+    spontaneous_count = len([app for app in all_applications if app.get('job_id') is None])
     
     current_user = get_current_user()
     permissions = has_permission(None)  # Get all permissions
@@ -1201,8 +1201,8 @@ def admin_job_candidates(job_id):
     job_applications = [app for app in all_applications if app['job_id'] == job_id]
     
     # Filtrer pour exclure les candidatures spontanées (job_id = 0) pour le badge
-    regular_applications = [app for app in all_applications if app.get('job_id') != 0]
-    spontaneous_count = len([app for app in all_applications if app.get('job_id') == 0])
+    regular_applications = [app for app in all_applications if app.get('job_id') is not None]
+    spontaneous_count = len([app for app in all_applications if app.get('job_id') is None])
     
     current_user = get_current_user()
     permissions = has_permission(None)  # Get all permissions
@@ -1232,8 +1232,8 @@ def admin_job_candidates_ar(job_id):
     job_applications = [app for app in all_applications if app['job_id'] == job_id]
     
     # Filtrer pour exclure les candidatures spontanées (job_id = 0) pour le badge
-    regular_applications = [app for app in all_applications if app.get('job_id') != 0]
-    spontaneous_count = len([app for app in all_applications if app.get('job_id') == 0])
+    regular_applications = [app for app in all_applications if app.get('job_id') is not None]
+    spontaneous_count = len([app for app in all_applications if app.get('job_id') is None])
     
     current_user = get_current_user()
     permissions = has_permission(None)  # Get all permissions
@@ -1372,8 +1372,8 @@ def admin_employees():
     all_applications = get_all_applications()
     
     # Filtrer pour exclure les candidatures spontanées (job_id = 0)
-    regular_applications = [app for app in all_applications if app.get('job_id') != 0]
-    spontaneous_count = len([app for app in all_applications if app.get('job_id') == 0])
+    regular_applications = [app for app in all_applications if app.get('job_id') is not None]
+    spontaneous_count = len([app for app in all_applications if app.get('job_id') is None])
     
     current_user = get_current_user()
     return render_template('admin/employees.html', 
@@ -1471,8 +1471,8 @@ def admin_profile():
     all_applications = get_all_applications()
     
     # Filtrer pour exclure les candidatures spontanées (job_id = 0)
-    regular_applications = [app for app in all_applications if app.get('job_id') != 0]
-    spontaneous_count = len([app for app in all_applications if app.get('job_id') == 0])
+    regular_applications = [app for app in all_applications if app.get('job_id') is not None]
+    spontaneous_count = len([app for app in all_applications if app.get('job_id') is None])
     
     current_user = get_current_user()
     permissions = has_permission(None)
@@ -1594,8 +1594,8 @@ def admin_dashboard_ar():
     current_user = get_current_user()
     all_applications = get_all_applications()
     
-    regular_applications = [app for app in all_applications if app.get('job_id') != 0]
-    spontaneous_count = len([app for app in all_applications if app.get('job_id') == 0])
+    regular_applications = [app for app in all_applications if app.get('job_id') is not None]
+    spontaneous_count = len([app for app in all_applications if app.get('job_id') is None])
     
     return render_template('admin/dashboard.html', 
                          applications=regular_applications,
@@ -1613,8 +1613,8 @@ def admin_applications_ar():
     session['lang'] = 'ar'  # Maintenir la langue arabe
     all_applications = get_all_applications()
     
-    regular_applications = [app for app in all_applications if app.get('job_id') != 0]
-    spontaneous_count = len([app for app in all_applications if app.get('job_id') == 0])
+    regular_applications = [app for app in all_applications if app.get('job_id') is not None]
+    spontaneous_count = len([app for app in all_applications if app.get('job_id') is None])
     
     current_user = get_current_user()
     permissions = has_permission(None)
@@ -1633,7 +1633,7 @@ def admin_spontaneous_applications_ar():
     """Route pour voir les candidatures spontanées - Version Arabe"""
     session['lang'] = 'ar'  # Maintenir la langue arabe
     all_applications = get_all_applications()
-    spontaneous_apps = [app for app in all_applications if app.get('job_id') == 0]
+    spontaneous_apps = [app for app in all_applications if app.get('job_id') is None]
     spontaneous_count = len(spontaneous_apps)
     
     current_user = get_current_user()
@@ -1658,7 +1658,7 @@ def admin_favorite_applications_ar():
     favorite_apps = get_favorite_applications()
     
     all_applications = get_all_applications()
-    spontaneous_count = len([app for app in all_applications if app.get('job_id') == 0])
+    spontaneous_count = len([app for app in all_applications if app.get('job_id') is None])
     
     current_user = get_current_user()
     permissions = has_permission(None)
@@ -1679,7 +1679,7 @@ def admin_jobs_ar():
     """Route pour voir toutes les offres d'emploi - Version Arabe"""
     session['lang'] = 'ar'  # Maintenir la langue arabe
     all_applications = get_all_applications()
-    spontaneous_count = len([app for app in all_applications if app.get('job_id') == 0])
+    spontaneous_count = len([app for app in all_applications if app.get('job_id') is None])
     
     current_user = get_current_user()
     permissions = has_permission(None)
@@ -1697,7 +1697,7 @@ def admin_employees_ar():
     """Route pour voir tous les employés - Version Arabe"""
     session['lang'] = 'ar'  # Maintenir la langue arabe
     all_applications = get_all_applications()
-    spontaneous_count = len([app for app in all_applications if app.get('job_id') == 0])
+    spontaneous_count = len([app for app in all_applications if app.get('job_id') is None])
     
     current_user = get_current_user()
     permissions = has_permission(None)
@@ -1715,7 +1715,7 @@ def admin_profile_ar():
     session['lang'] = 'ar'  # Maintenir la langue arabe
     current_user = get_current_user()
     all_applications = get_all_applications()
-    spontaneous_count = len([app for app in all_applications if app.get('job_id') == 0])
+    spontaneous_count = len([app for app in all_applications if app.get('job_id') is None])
     
     permissions = has_permission(None)
     return render_template('admin/profile.html',
@@ -1741,8 +1741,8 @@ def admin_application_detail_ar(app_id):
         return redirect(url_for('admin_applications_ar'))
     
     # Filtrer pour exclure les candidatures spontanées (job_id = 0) pour le badge
-    regular_applications = [app for app in all_applications if app.get('job_id') != 0]
-    spontaneous_count = len([app for app in all_applications if app.get('job_id') == 0])
+    regular_applications = [app for app in all_applications if app.get('job_id') is not None]
+    spontaneous_count = len([app for app in all_applications if app.get('job_id') is None])
     
     current_user = get_current_user()
     permissions = has_permission(None)
@@ -1770,13 +1770,13 @@ def admin_spontaneous_application_detail_ar(app_id):
         return redirect(url_for('admin_spontaneous_applications_ar'))
     
     # Vérifier que c'est bien une candidature spontanée
-    if application.get('job_id') != 0:
+    if application.get('job_id') is not None:
         flash('هذا الطلب ليس طلبًا عفويًا', 'error')
         return redirect(url_for('admin_applications_ar'))
     
     # Filtrer pour exclure les candidatures spontanées (job_id = 0) pour le badge
-    regular_applications = [app for app in all_applications if app.get('job_id') != 0]
-    spontaneous_count = len([app for app in all_applications if app.get('job_id') == 0])
+    regular_applications = [app for app in all_applications if app.get('job_id') is not None]
+    spontaneous_count = len([app for app in all_applications if app.get('job_id') is None])
     
     current_user = get_current_user()
     permissions = has_permission(None)
