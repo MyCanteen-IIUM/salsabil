@@ -297,9 +297,24 @@
 
         <section class="cta-section">
             <div class="container">
-                <h3>Vous ne trouvez pas le poste idéal ?</h3>
-                <p>Envoyez-nous une candidature spontanée, nous serions ravis de vous rencontrer !</p>
-                <a href="{{ url_for('apply', job_id=0) }}" class="btn-secondary">Candidature Spontanée</a>
+                {% if spontaneous_open %}
+                    <h3>Vous ne trouvez pas le poste idéal ?</h3>
+                    <p>Envoyez-nous une candidature spontanée, nous serions ravis de vous rencontrer !</p>
+                    <a href="{{ url_for('apply', job_id=0) }}" class="btn-secondary">Candidature Spontanée</a>
+                {% else %}
+                    <div style="text-align: center; padding: 2rem; background: #fff3cd; border-radius: 8px; border: 2px solid #ffc107;">
+                        <h3 style="color: #856404; margin-bottom: 1rem;">
+                            <span style="font-size: 2rem;">🔒</span><br>
+                            Candidatures Spontanées Temporairement Fermées
+                        </h3>
+                        <p style="color: #856404; font-size: 1.1rem; line-height: 1.6; margin-bottom: 1rem;">
+                            Suite à un grand nombre de candidatures reçues, nous avons temporairement fermé les candidatures spontanées afin de traiter toutes les demandes avec l'attention qu'elles méritent.
+                        </p>
+                        <p style="color: #666; font-size: 0.95rem;">
+                            Nous vous invitons à consulter nos offres d'emploi disponibles ci-dessus. Les candidatures spontanées seront rouvertes prochainement. Merci de votre compréhension !
+                        </p>
+                    </div>
+                {% endif %}
             </div>
         </section>
     </main>
