@@ -184,6 +184,82 @@
                 </div>
             </div>
 
+            <!-- Spontaneous Applications Toggle Control -->
+            {% if not is_favorites_view %}
+            <div class="spontaneous-status-control" style="background: white; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <div style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap;">
+                    <div>
+                        <h3 style="margin: 0 0 0.5rem 0; font-size: 1.1rem;">
+                            {% if lang == 'ar' %}
+                                حالة الطلبات العفوية
+                            {% else %}
+                                Statut des candidatures spontanées
+                            {% endif %}
+                        </h3>
+                        {% if spontaneous_open %}
+                            <div style="display: flex; align-items: center; gap: 0.5rem; color: #10b981;">
+                                <span style="font-size: 1.5rem;">🔓</span>
+                                <strong>
+                                    {% if lang == 'ar' %}
+                                        مفتوحة للجمهور
+                                    {% else %}
+                                        Ouvertes au public
+                                    {% endif %}
+                                </strong>
+                            </div>
+                            <p style="margin: 0.5rem 0 0 0; color: #666; font-size: 0.9rem;">
+                                {% if lang == 'ar' %}
+                                    يمكن للمرشحين تقديم طلبات عفوية
+                                {% else %}
+                                    Les candidats peuvent soumettre des candidatures spontanées
+                                {% endif %}
+                            </p>
+                        {% else %}
+                            <div style="display: flex; align-items: center; gap: 0.5rem; color: #f59e0b;">
+                                <span style="font-size: 1.5rem;">🔒</span>
+                                <strong>
+                                    {% if lang == 'ar' %}
+                                        مغلقة مؤقتاً
+                                    {% else %}
+                                        Fermées temporairement
+                                    {% endif %}
+                                </strong>
+                            </div>
+                            <p style="margin: 0.5rem 0 0 0; color: #666; font-size: 0.9rem;">
+                                {% if lang == 'ar' %}
+                                    لا يمكن تقديم طلبات عفوية جديدة
+                                {% else %}
+                                    Les nouvelles candidatures spontanées sont bloquées
+                                {% endif %}
+                            </p>
+                        {% endif %}
+                    </div>
+                    
+                    <form method="POST" action="{{ url_for('admin_toggle_spontaneous') }}" style="margin: 0;">
+                        {% if spontaneous_open %}
+                            <button type="submit" class="btn" style="background: #f59e0b; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 6px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; transition: all 0.3s;">
+                                <span>🔒</span>
+                                {% if lang == 'ar' %}
+                                    إغلاق مؤقتاً
+                                {% else %}
+                                    Fermer temporairement
+                                {% endif %}
+                            </button>
+                        {% else %}
+                            <button type="submit" class="btn" style="background: #10b981; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 6px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; transition: all 0.3s;">
+                                <span>🔓</span>
+                                {% if lang == 'ar' %}
+                                    إعادة فتح الطلبات
+                                {% else %}
+                                    Rouvrir les candidatures
+                                {% endif %}
+                            </button>
+                        {% endif %}
+                    </form>
+                </div>
+            </div>
+            {% endif %}
+
             <!-- Stats Cards -->
             <div class="stats-grid">
                 <div class="stat-card">
