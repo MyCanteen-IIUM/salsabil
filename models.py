@@ -665,3 +665,62 @@ def get_favorite_applications():
     conn.close()
     return [dict(app) for app in applications]
 
+
+# ==================== SYSTEM SETTINGS ====================
+
+def are_spontaneous_applications_open():
+    """Vérifier si les candidatures spontanées sont ouvertes"""
+    conn = get_db_connection()
+    try:
+        result = conn.execute('''
+            SELECT setting_value FROM system_settings 
+            WHERE setting_key = 'spontaneous_applications_open'
+        ''').fetchone()
+        conn.close()
+        
+        if result:
+            value = result['setting_value'] if isinstance(result, dict) else result[0]
+            return value == 'true'
+        return True  # Par défaut, ouvert
+    except:
+        conn.close()
+        return True  # En cas d'erreur, considérer comme ouvert
+
+def toggle_spontaneous_applications():
+    """Activer/désactiver les candidatures spontanées"""
+    conn = get_db_connection()
+    current_status = are_spontaneous_applications_open()
+    new_status = 'false' if current_status else 'true'
+    
+    conn.execute('''
+        UPDATE system_settings 
+        SET setting_value = ?, updated_at = CURRENT_TIMESTAMP
+        WHERE setting_key = 'spontaneous_applications_open'
+    ''', (new_status,))
+    
+    conn.commit()
+    conn.close()
+    
+    return new_status == 'true'
+
+def get_spontaneous_status_message(lang='fr'):
+    """Obtenir le message de statut pour les candidatures spontanées"""
+    is_open = are_spontaneous_applications_open()
+    
+    if is_open:
+        return None  # Pas de message si ouvert
+    
+    messages = {
+        'fr': {
+            'title': '📋 Candidatures Spontanées Temporairement Fermées',
+            'message': 'Suite à un grand nombre de candidatures reçues, nous avons temporairement suspendu les candidatures spontanées afin de traiter l\'ensemble des dossiers en attente.',
+            'info': 'Les candidatures spontanées seront rouvertes prochainement. Merci de votre compréhension.'
+        },
+        'ar': {
+            'title': '📋 الطلبات العفوية مغلقة مؤقتاً',
+            'message': 'نظراً للعدد الكبير من الطلبات المستلمة، قمنا بتعليق الطلبات العفوية مؤقتاً من أجل معالجة جميع الملفات المعلقة.',
+            'info': 'سيتم إعادة فتح الطلبات العفوية قريباً. شكراً لتفهمكم.'
+        }
+    }
+    
+    return messages.get(lang, messages['fr'])

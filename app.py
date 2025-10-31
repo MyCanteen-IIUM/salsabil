@@ -159,19 +159,31 @@ def get_redirect_with_lang(route_name, **kwargs):
 @app.route('/')
 def home():
     """Route pour la page d'accueil - affiche directement les postes disponibles"""
-    return render_template('jobs.html', jobs=get_all_jobs(), is_closing_soon=is_closing_soon)
+    from models import are_spontaneous_applications_open
+    return render_template('jobs.html', 
+                         jobs=get_all_jobs(), 
+                         is_closing_soon=is_closing_soon,
+                         spontaneous_open=are_spontaneous_applications_open())
 
 @app.route('/jobs')
 def jobs():
     """Route pour afficher tous les postes disponibles"""
+    from models import are_spontaneous_applications_open
     jobs = get_all_jobs()
-    return render_template('jobs.html', jobs=jobs, is_closing_soon=is_closing_soon)
+    return render_template('jobs.html', 
+                         jobs=jobs, 
+                         is_closing_soon=is_closing_soon,
+                         spontaneous_open=are_spontaneous_applications_open())
 
 @app.route('/jobs_ar')
 def jobs_ar():
     """Route pour afficher tous les postes disponibles en arabe"""
+    from models import are_spontaneous_applications_open
     jobs = get_all_jobs()
-    return render_template('jobs_ar.html', jobs=jobs, is_closing_soon=is_closing_soon)
+    return render_template('jobs_ar.html', 
+                         jobs=jobs, 
+                         is_closing_soon=is_closing_soon,
+                         spontaneous_open=are_spontaneous_applications_open())
 
 @app.route('/jobs/<int:job_id>')
 def job_detail(job_id):
@@ -185,9 +197,20 @@ def job_detail(job_id):
 @app.route('/apply/<int:job_id>', methods=['GET', 'POST'])
 def apply(job_id):
     """Route pour postuler à un poste"""
+    from models import are_spontaneous_applications_open, get_spontaneous_status_message
     
     # Gérer les candidatures spontanées (job_id = 0)
     if job_id == 0:
+        # Vérifier si les candidatures spontanées sont ouvertes
+        if not are_spontaneous_applications_open():
+            status_msg = get_spontaneous_status_message('fr')
+            flash(status_msg['message'], 'warning')
+            return render_template('jobs.html', 
+                                 jobs=get_all_jobs(), 
+                                 is_closing_soon=is_closing_soon,
+                                 spontaneous_closed=True,
+                                 spontaneous_message=status_msg)
+        
         job = {
             'id': 0,
             'titre': 'Candidature Spontanée',
@@ -370,9 +393,20 @@ def apply(job_id):
 @app.route('/apply_ar/<int:job_id>', methods=['GET', 'POST'])
 def apply_ar(job_id):
     """Route pour postuler à un poste en arabe"""
+    from models import are_spontaneous_applications_open, get_spontaneous_status_message
     
     # Gérer les candidatures spontanées (job_id = 0)
     if job_id == 0:
+        # Vérifier si les candidatures spontanées sont ouvertes
+        if not are_spontaneous_applications_open():
+            status_msg = get_spontaneous_status_message('ar')
+            flash(status_msg['message'], 'warning')
+            return render_template('jobs_ar.html', 
+                                 jobs=get_all_jobs(), 
+                                 is_closing_soon=is_closing_soon,
+                                 spontaneous_closed=True,
+                                 spontaneous_message=status_msg)
+        
         job = {
             'id': 0,
             'titre': 'طلب توظيف عفوي',
@@ -672,6 +706,8 @@ def admin_applications():
 @permission_required('view_applications')
 def admin_spontaneous_applications():
     """Route pour voir uniquement les candidatures spontanées"""
+    from models import are_spontaneous_applications_open
+    
     all_applications = get_all_applications()
     # Filtrer uniquement les candidatures spontanées (job_id = 0)
     spontaneous_apps = [app for app in all_applications if app.get('job_id') is None]
@@ -679,13 +715,46 @@ def admin_spontaneous_applications():
     
     current_user = get_current_user()
     permissions = has_permission(None)  # Get all permissions
+    
+    # Vérifier si les candidatures spontanées sont ouvertes
+    is_open = are_spontaneous_applications_open()
+    
     return render_template('admin/spontaneous_applications.html', 
                          applications=spontaneous_apps,
                          jobs=get_all_jobs(),
                          current_user=current_user,
                          permissions=permissions,
                          spontaneous_count=spontaneous_count,
+                         spontaneous_open=is_open,
                          lang='fr')
+
+@app.route('/admin/toggle-spontaneous-applications', methods=['POST'])
+@login_required
+@permission_required('edit_application')
+def admin_toggle_spontaneous():
+    """Route pour activer/désactiver les candidatures spontanées"""
+    from models import toggle_spontaneous_applications
+    
+    # Sauvegarder la langue
+    lang = session.get('lang', 'fr')
+    
+    try:
+        new_status = toggle_spontaneous_applications()
+        
+        if new_status:
+            if lang == 'ar':
+                flash('✅ تم فتح الطلبات العفوية', 'success')
+            else:
+                flash('✅ Candidatures spontanées ouvertes', 'success')
+        else:
+            if lang == 'ar':
+                flash('🔒 تم إغلاق الطلبات العفوية مؤقتاً', 'info')
+            else:
+                flash('🔒 Candidatures spontanées fermées temporairement', 'info')
+    except Exception as e:
+        flash(f'Erreur: {str(e)}', 'error')
+    
+    return redirect(url_for('admin_spontaneous_applications'))
 
 @app.route('/admin/favorite-applications')
 @login_required

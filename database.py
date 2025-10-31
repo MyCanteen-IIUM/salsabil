@@ -348,6 +348,38 @@ def init_db():
                 FOREIGN KEY (application_id) REFERENCES applications (id)
             )
         ''')
+        
+    # Fin du bloc SQLite document_verifications
+
+    # Table pour les paramètres système (créée pour les deux SGBD)
+    if is_postgresql():
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS system_settings (
+                id SERIAL PRIMARY KEY,
+                setting_key TEXT UNIQUE NOT NULL,
+                setting_value TEXT,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+    else:
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS system_settings (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                setting_key TEXT UNIQUE NOT NULL,
+                setting_value TEXT,
+                updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+
+    conn.commit()
+    
+    # Initialiser le paramètre des candidatures spontanées
+    # PostgreSQL compatible syntax
+    cursor.execute('''
+        INSERT INTO system_settings (setting_key, setting_value)
+        VALUES ('spontaneous_applications_open', 'true')
+        ON CONFLICT (setting_key) DO NOTHING
+    ''')
     
     conn.commit()
     
